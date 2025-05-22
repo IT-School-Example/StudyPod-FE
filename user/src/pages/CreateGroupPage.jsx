@@ -1,10 +1,10 @@
 import Navbar from "../components/Navbar";
 
-export function SignupPage() {
+export function CreateGroupPage() {
   return (
     <div>
         <Navbar/>
-        회원가입 페이지입니다!
+        스터디 개설 페이지입니다!
     </div>
   );
 }

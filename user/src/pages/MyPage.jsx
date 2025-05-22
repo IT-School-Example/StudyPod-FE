@@ -1,10 +1,10 @@
 import Navbar from "../components/Navbar";
 
-export function SignupPage() {
+export function MyPage() {
   return (
     <div>
         <Navbar/>
-        회원가입 페이지입니다!
+        마이페이지입니다!
     </div>
   );
 }
