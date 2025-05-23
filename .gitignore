@@ -33,8 +33,8 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # next.js
-/.next/
-/out/
+/user/.next/
+/user/out/
 
 
 # env files (can opt-in for committing if needed)
