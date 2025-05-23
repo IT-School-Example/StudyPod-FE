@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "detail": "python-study",
+    "tag": "파이썬",
+    "content": "파이썬 기초 문법부터 같이 공부하실 분 연락주세요!!",
+    "name": "홍길동",
+    "like": 128
+  },
+  {
+    "id": 2,
+    "detail": "javascript-study",
+    "tag": "자바스크립트",
+    "content": "자바스크립트 기초 문법부터 같이 공부하실 분 연락주세요!!",
+    "name": "손정훈",
+    "like": 94
+  },
+  {
+    "id": 3,
+    "detail": "react-study",
+    "tag": "React",
+    "content": "React 기초 문법부터 같이 공부하실 분 연락주세요!!",
+    "name": "지유",
+    "like": 77
+  },
+  {
+    "id": 4,
+    "detail": "c-study",
+    "tag": "C언어",
+    "content": "C언어 기초 문법부터 같이 공부하실 분 연락주세요!!",
+    "name": "지호",
+    "like": 105
+  },
+  {
+    "id": 5,
+    "detail": "java-study",
+    "tag": "Java",
+    "content": "Java 기초 문법부터 같이 공부하실 분 연락주세요!!",
+    "name": "현수",
+    "like": 89
+  },
+  {
+    "id": 1747944474709,
+    "tag": "ㅈㅂㅈㅈ",
+    "content": "ㅈㄷㅂㄷㅂㄷ",
+    "name": "admin",
+    "like": 0,
+    "detail": "ㅈㅂㅈㅈ-ㅈㄷㅂㄷㅂㄷ-1747944474709"
+  },
+  {
+    "id": 1747944705536,
+    "tag": "ㄴㅁㅇㅁㅇ",
+    "content": "ㄴㅁㅇㅁㄴㅇ",
+    "name": "admin",
+    "like": 0,
+    "detail": "ed4ada39-5183-4b95-a286-da0734d7e27a"
+  },
+  {
+    "id": 1747958924534,
+    "tag": "ㅇㅇ",
+    "content": "ㅇㅇㅇㅇ",
+    "name": "dd",
+    "like": 0,
+    "detail": "c65321b0-46bf-472b-8dbb-99bc551fe95f"
+  },
+  {
+    "id": 1747963661013,
+    "tag": "ㅇㅇ",
+    "content": "ㅇㅇㅇㅇ",
+    "name": "ddd",
+    "like": 0,
+    "detail": "4d5f46fa-955f-4252-a866-07ec4fa63e1d"
+  }
+]
