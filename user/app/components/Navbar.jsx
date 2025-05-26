@@ -32,10 +32,10 @@ export default function Navbar() {
                 <Link href="/searchPage">
                   <h1>스터디 그룹 조건 검색</h1>
                 </Link>
-                <Link href="/faq">
+                <Link href="/faqPage">
                   <h1>공지사항&FAQ</h1>
                 </Link>
-                <Link href="/event">
+                <Link href="/eventPage">
                   <h1>이벤트</h1>
                 </Link>
               </div>
@@ -66,13 +66,13 @@ export default function Navbar() {
                 />
               </Link>
               <div className="flex flex-row py-5 text-black font-semibold space-x-5">
-                <Link href="/loginPage">
+                <Link href="/searchPage">
                   <h1>스터디 그룹 조건 검색</h1>
                 </Link>
-                <Link href="/loginPage">
+                <Link href="/faqPage">
                   <h1>공지사항&FAQ</h1>
                 </Link>
-                <Link href="/loginPage">
+                <Link href="/eventPage">
                   <h1>이벤트</h1>
                 </Link>
               </div>

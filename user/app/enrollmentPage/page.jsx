@@ -1,10 +1,10 @@
 import Navbar from "../components/Navbar";
 
-export default function Event() {
+export default function EnrollmentPage() {
   return (
     <div className="w-full h-full flex flex-col bg-white px-24 text-black">
       <Navbar />
-      <h1>event 페이지입니다!</h1>
+      <h1>신청 페이지입니다!</h1>
     </div>
   );
 }
