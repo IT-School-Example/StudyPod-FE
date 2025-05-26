@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "@/app/components/Navbar";
 import Link from "next/link";
 
 export default function StudyDetail({ params }) {
@@ -66,9 +66,9 @@ export default function StudyDetail({ params }) {
           </div>
 
           <div>
-            <Link href="/enrollment">
+            <Link href="/enrollmentPage">
               <button className="w-full py-3 rounded-md bg-[#4B2E1E] text-white font-semibold mb-6">
-              로그인
+              스터디 신청하기기
             </button>
             </Link>
           </div>

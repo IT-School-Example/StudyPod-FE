@@ -1,9 +1,10 @@
-import Navbar from "../components/Navbar";
+import Navbar from "@/app/components/Navbar";
+
 
 export default function EnrollmentPage() {
   return (
     <div className="w-full h-full flex flex-col bg-white px-24 text-black">
-      <Navbar />
+      <Navbar/>
       <h1>신청 페이지입니다!</h1>
     </div>
   );

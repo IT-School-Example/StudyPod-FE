@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Navbar from "../components/Navbar";
-import Card from "../components/card";
+import Navbar from "@/app/components/Navbar";
+import Card from "@/app/components/card";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
