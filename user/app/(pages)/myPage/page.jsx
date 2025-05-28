@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 
+// 여기에 정보 수정, 소속 스터디 조회 필수
 export default function MyPage() {
   const router = useRouter();
   const [user, setUser] = useState({ email: "", name: "", password: "" });

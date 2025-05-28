@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/app/components/Navbar";
 import Card from "@/app/components/card";
 
+// 검색 필터 필요함 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [studyData, setStudyData] = useState([]);

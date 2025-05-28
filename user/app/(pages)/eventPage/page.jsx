@@ -1,5 +1,6 @@
 import Navbar from "@/app/components/Navbar";
 
+// 추후 개발 예정
 export default function EventPage() {
   return (
     <div className="w-full h-full flex flex-col bg-white px-24 text-black">
