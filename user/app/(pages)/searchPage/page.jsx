@@ -49,7 +49,7 @@ export default function SearchPage() {
             content={item.content}
             name={item.name}
             like={item.like}
-            detail={item.slug}
+            detail={item.detail}
           />
         ))}
       </div>
