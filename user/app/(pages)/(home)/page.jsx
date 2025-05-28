@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Card from "./components/card";
-import Navbar from "./components/Navbar";
+import Navbar from "@/app/components/Navbar";
+import Card from "@/app/components/card";
 import Image from "next/image";
 
 export default function Home() {
@@ -65,6 +65,7 @@ export default function Home() {
                   content={item.content}
                   name={item.name}
                   like={item.like}
+                  url={`?tab=members`}
                 />
               ))}
             </div>
@@ -82,6 +83,7 @@ export default function Home() {
                   content={item.content}
                   name={item.name}
                   like={item.like}
+                  url={`?tab=intro`}
                 />
               ))}
             </div>
@@ -101,6 +103,7 @@ export default function Home() {
                 content={item.content}
                 name={item.name}
                 like={item.like}
+                url={`?tab=intro`}
               />
             ))}
           </div>
