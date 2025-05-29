@@ -63,7 +63,7 @@ export default function Home() {
                   detail={item.detail}
                   tag={item.tag}
                   content={item.content}
-                  leader={item.leader}
+                  leader={item.member.role_leader}
                   like={item.like}
                   url={`?tab=members`}
                 />
@@ -81,7 +81,7 @@ export default function Home() {
                   detail={item.detail}
                   tag={item.tag}
                   content={item.content}
-                  leader={item.leader}
+                  leader={item.member.role_leader}
                   like={item.like}
                   url={`?tab=intro`}
                 />
@@ -101,7 +101,7 @@ export default function Home() {
                 key={item.id}
                 tag={item.tag}
                 content={item.content}
-                leader={item.leader}
+                leader={item.member.role_leader}
                 like={item.like}
                 url={`?tab=intro`}
               />

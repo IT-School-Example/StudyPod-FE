@@ -21,27 +21,34 @@ export default function CreateGroup() {
     if (user) setName(user.name);
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newStudy = {
-      id: Date.now(),
-      tag,
-      content,
-      leader,
-      schedule,
-      place,
-      maxMember,
-      fee,
-      like: 0,
-      detail: crypto.randomUUID(),
-    };
-    await fetch("/api", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newStudy),
-    });
-    router.push(`/studyGroup/manage?study=${content}`);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const newStudy = {
+    id: Date.now(),
+    tag,
+    content,
+    detail,
+    schedule,
+    place,
+    maxMember,
+    fee,
+    like: 0,
+    member: {
+      role_leader: leader,  // 기존 leader → member.role_leader
+      role_member: []
+    },
+    detail : crypto.randomUUID(),
   };
+
+  await fetch("/api/newStudy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newStudy),
+  });
+
+  router.push(`/studyGroup/manage?study=${detail}`);
+};
 
   return (
     <div className="w-full h-full flex flex-col bg-white px-24 text-black">
