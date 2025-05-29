@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Manage from "./Manage"; // 위 컴포넌트를 import
+import Manage from "./(main)/manage"; // 위 컴포넌트를 import
 
 export default function ManagePage() {
   return (
