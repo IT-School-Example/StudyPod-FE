@@ -4,47 +4,74 @@
     "detail": "python-study",
     "tag": "파이썬",
     "content": "파이썬 기초 문법부터 같이 공부하실 분 연락주세요!!",
-    "leader": "홍길동",
-    "schedule":"매주 월요일",
-    "place":"대전 관저동",
-    "maxMember":"6",
-    "fee":"10,000",
-    "like": 128
+    "schedule": "매주 월요일",
+    "place": "대전 관저동",
+    "maxMember": "6",
+    "fee": "10,000",
+    "like": 128,
+    "member": {
+      "role_leader": "홍길동",
+      "role_member": []
+    }
   },
   {
     "id": 2,
     "detail": "javascript-study",
     "tag": "자바스크립트",
     "content": "자바스크립트 기초 문법부터 같이 공부하실 분 연락주세요!!",
-    "leader": "손정훈",
-    "schedule":"매주 월요일",
-    "place":"대전 관저동",
-    "maxMember":"6",
-    "fee":"10,000",
-    "like": 94
+    "schedule": "매주 월요일",
+    "place": "대전 관저동",
+    "maxMember": "6",
+    "fee": "10,000",
+    "like": 94,
+    "member": {
+      "role_leader": "손정훈",
+      "role_member": []
+    }
   },
   {
     "id": 3,
     "detail": "react-study",
     "tag": "React",
     "content": "React 기초 문법부터 같이 공부하실 분 연락주세요!!",
-    "leader": "지유",
-    "schedule":"매주 월요일",
-    "place":"대전 관저동",
-    "maxMember":"6",
-    "fee":"10,000",
-    "like": 77
+    "schedule": "매주 월요일",
+    "place": "대전 관저동",
+    "maxMember": "6",
+    "fee": "10,000",
+    "like": 77,
+    "member": {
+      "role_leader": "지유",
+      "role_member": []
+    }
   },
   {
     "id": 4,
     "detail": "c-study",
     "tag": "C언어",
     "content": "C언어 기초 문법부터 같이 공부하실 분 연락주세요!!",
-    "leader": "지호",
-    "schedule":"매주 월요일",
-    "place":"대전 관저동",
-    "maxMember":"6",
-    "fee":"10,000",
-    "like": 105
+    "schedule": "매주 월요일",
+    "place": "대전 관저동",
+    "maxMember": "6",
+    "fee": "10,000",
+    "like": 105,
+    "member": {
+      "role_leader": "지호",
+      "role_member": []
+    }
+  },
+  {
+    "id": 1748498270012,
+    "tag": "알고리즘",
+    "content": "코딩 테스트로 같이 알고리즘 공부하실 분 구해요!!",
+    "detail": "a62c60cc-0736-4bf0-a607-1b9e04ecb156",
+    "schedule": "미정",
+    "place": "미정",
+    "maxMember": "4명",
+    "fee": "없음",
+    "like": 0,
+    "member": {
+      "role_leader": "파이리",
+      "role_member": []
+    }
   }
 ]
