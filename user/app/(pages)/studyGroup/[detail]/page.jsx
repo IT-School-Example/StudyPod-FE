@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Navbar from "@/app/components/Navbar";
 import StudyIntro from "../components/StudyIntro";
 import StudyMembers from "../components/StudyMembers";
+import Enrollment from "../components/enrollment";
 
 export default function StudyGroup({ params }) {
   const searchParams = useSearchParams();
@@ -35,6 +36,7 @@ export default function StudyGroup({ params }) {
       <div className="p-10 space-y-8 text-black">
         {tab === "intro" && <StudyIntro study={study} />}
         {tab === "members" && <StudyMembers study={study} />}
+        {tab === "enrollment" && <Enrollment study={study} />}
       </div>
     </div>
   );

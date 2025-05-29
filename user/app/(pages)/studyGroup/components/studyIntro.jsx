@@ -15,7 +15,7 @@ export default function StudyIntro({ study }) {
           <h1 className="text-3xl font-bold">
             {study.content}
           </h1>
-          <Link href="/studyGroupPage/enrollmentPage">
+          <Link href={`/studyGroup/${study.detail}?tab=enrollment`}>
             <button className="py-3 px-6 rounded-md bg-[#4B2E1E] text-white font-semibold">
               스터디 신청하기
             </button>
