@@ -48,7 +48,7 @@ export default function Search() {
             key={item.id}
             tag={item.tag}
             content={item.content}
-            leader={item.leader}
+            leader={item.member.role_leader}
             like={item.like}
             detail={item.detail}
           />
