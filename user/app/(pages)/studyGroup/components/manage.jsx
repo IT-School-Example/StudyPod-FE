@@ -12,10 +12,10 @@ export default function Manage({ study }) {
 
   const tabs = [
     { key: "member", label: "회원 관리" },
-    { key: "notice", label: "공지사항 작성" },
-    { key: "board", label: "게시글 관리" },
-    { key: "introduce", label: "소개(모집)글 작성" },
     { key: "request", label: "스터디 그룹 신청자 관리" },
+    { key: "board", label: "게시글 관리" },
+    { key: "notice", label: "공지사항 작성" },
+    { key: "introduce", label: "소개(모집)글 작성 및 관리" },
   ];
 
   return (
@@ -43,11 +43,11 @@ export default function Manage({ study }) {
         })}
       </div>
 
-      {tab === "board" && <Board study={study} />}
       {tab === "member" && <Member study={study} />}
+      {tab === "request" && <Request study={study} />}
+      {tab === "board" && <Board study={study} />}
       {tab === "notice" && <Notice study={study} />}
       {tab === "introduce" && <Introduce study={study} />}
-      {tab === "request" && <Request study={study} />}
     </div>
   );
 }
