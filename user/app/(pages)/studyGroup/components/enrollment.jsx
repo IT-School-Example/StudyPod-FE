@@ -22,7 +22,7 @@ export default function Enrollment({study}) {
       user,
       introduce,
       status : "pending",
-      studyDetail: study
+      studyDetail: study.detail
     };
     await fetch("/api/joinMember", {
       method: "POST",
