@@ -47,7 +47,7 @@ const handleSubmit = async (e) => {
     body: JSON.stringify(newStudy),
   });
 
-  router.push(`/studyGroup/manage?study=${detail}`);
+  router.push(`/studyGroup/${detail}?tab=manage`);
 };
 
   return (
