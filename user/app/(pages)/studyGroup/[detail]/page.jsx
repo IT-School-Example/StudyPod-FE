@@ -5,6 +5,7 @@ import Navbar from "@/app/components/Navbar";
 import StudyIntro from "../components/StudyIntro";
 import StudyMembers from "../components/StudyMembers";
 import Enrollment from "../components/enrollment";
+import Manage from "../components/manage";
 
 export default function StudyGroup({ params }) {
   const searchParams = useSearchParams();
@@ -37,6 +38,7 @@ export default function StudyGroup({ params }) {
         {tab === "intro" && <StudyIntro study={study} />}
         {tab === "members" && <StudyMembers study={study} />}
         {tab === "enrollment" && <Enrollment study={study} />}
+        {tab === "manage" && <Manage study={study} />}
       </div>
     </div>
   );
