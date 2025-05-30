@@ -12,5 +12,19 @@
     "introduce": "같이 하고 싶어요",
     "status": "pending",
     "studyDetail": "c-study"
+  },
+  {
+    "id": 1748572310159,
+    "user": "파이리",
+    "introduce": "dd",
+    "status": "pending",
+    "studyDetail": "python-study"
+  },
+  {
+    "id": 1748572678268,
+    "user": "dddd",
+    "introduce": "dddd",
+    "status": "pending",
+    "studyDetail": "python-study"
   }
 ]
