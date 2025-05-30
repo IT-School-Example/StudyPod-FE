@@ -35,7 +35,6 @@ export default function Request({study}) {
 
   return (
     <div>
-      <h1>스터디 신청 리스트입니다</h1>
       <table className="w-full border border-gray-300 mb-5 border-collapse">
         <thead className="bg-gray-100">
           <tr>
