@@ -24,6 +24,8 @@ export default function CreateGroup() {
 const handleSubmit = async (e) => {
   e.preventDefault();
 
+  const detail = crypto.randomUUID();
+
   const newStudy = {
     id: Date.now(),
     tag,
@@ -34,11 +36,11 @@ const handleSubmit = async (e) => {
     maxMember,
     fee,
     like: 0,
+    introduce: "",
     member: {
-      role_leader: leader,  // 기존 leader → member.role_leader
+      role_leader: leader,
       role_member: []
-    },
-    detail : crypto.randomUUID(),
+    }
   };
 
   await fetch("/api/newStudy", {
