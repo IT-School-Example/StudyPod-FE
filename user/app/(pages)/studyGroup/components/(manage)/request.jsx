@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-export default function Request({study}) {
+export default function Request({ study }) {
   const [requests, setRequests] = useState([]);
 
   const filteredRequests = Array.isArray(requests)
@@ -12,12 +12,9 @@ export default function Request({study}) {
     fetch("/joinMemberList.json")
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) {
-          setRequests(data);
-        } else {
-          setRequests([]);
-        }
-      })
+        if (Array.isArray(data)) setRequests(data);
+        else setRequests([]);
+      });
   }, []);
 
   const updateStatus = async (id, user, studyDetail, status) => {
@@ -35,54 +32,49 @@ export default function Request({study}) {
 
   return (
     <div>
-      <table className="w-full border border-gray-300 mb-5 border-collapse">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="border p-2">번호</th>
-            <th className="border p-2">회원</th>
-            <th className="border p-2">소개</th>
-            <th className="border p-2">수락</th>
-            <th className="border p-2">거절</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredRequests.length > 0 ? (
-            filteredRequests.map((req, idx) => (
-              <tr key={req.id}>
-                <td className="border p-2 text-center">{idx + 1}</td>
-                <td className="border p-2 text-center">{req.user}</td>
-                <td className="border p-2 text-center">{req.introduce}</td>
-                <td className="border p-2 text-center">
-                  {req.status === "pending" && (
-                    <button
-                      onClick={() => updateStatus(req.id, req.user, req.studyDetail, "approved")}
-                      className="text-green-500 hover:underline"
-                    >
-                      수락
-                    </button>
-                  )}
-                </td>
-                <td className="border p-2 text-center">
-                  {req.status === "pending" && (
-                    <button
-                      onClick={() => updateStatus(req.id, req.user, "rejected")}
-                      className="text-red-500 hover:underline"
-                    >
-                      거절
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td className="border p-2 text-center" colSpan={5}>
-                신청자가 없습니다.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+      <div className="grid grid-cols-5 font-semibold bg-gray-50 py-2 px-3 text-sm text-gray-700">
+        <div>번호</div>
+        <div>회원</div>
+        <div>소개</div>
+        <div>수락</div>
+        <div>거절</div>
+      </div>
+      {filteredRequests.length > 0 ? (
+        filteredRequests.map((req, idx) => (
+          <div
+            key={req.id}
+            className="grid grid-cols-5 items-center py-2 px-3 text-sm hover:bg-gray-50"
+          >
+            <div>{idx + 1}</div>
+            <div>{req.user}</div>
+            <div>{req.introduce}</div>
+            <div>
+              {req.status === "pending" && (
+                <button
+                  onClick={() => updateStatus(req.id, req.user, req.studyDetail, "approved")}
+                  className="text-green-500 hover:underline"
+                >
+                  수락
+                </button>
+              )}
+            </div>
+            <div>
+              {req.status === "pending" && (
+                <button
+                  onClick={() => updateStatus(req.id, req.user, req.studyDetail, "rejected")}
+                  className="text-red-500 hover:underline"
+                >
+                  거절
+                </button>
+              )}
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="py-3 px-3 text-center text-sm text-gray-500">
+          신청자가 없습니다.
+        </div>
+      )}
     </div>
   );
 }
