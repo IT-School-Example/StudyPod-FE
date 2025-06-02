@@ -7,12 +7,18 @@ import Image from "next/image";
 
 export default function Home() {
   const [offset, setOffset] = useState({ y: 0 });
-  const [isLoggedIn, setIsLoggedIn] = useState(false); //localstorage에 true false잇음
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [studyData, setStudyData] = useState([]);
+  const [name, setName] = useState("");
 
   useEffect(() => {
     const status = localStorage.getItem("isLoggedIn") === "true";
     setIsLoggedIn(status);
+
+    const currentEmail = localStorage.getItem("currentUser");
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const user = users.find((u) => u.email === currentEmail);
+    if (user) setName(user.name);
 
     fetch("/studyData.json")
       .then((res) => res.json())
@@ -24,6 +30,22 @@ export default function Home() {
     const y = ((e.clientY - top) / height - 0.5) * 20;
     setOffset({ y });
   };
+
+  const leaderGroups = studyData.filter((item) =>
+    item.member?.role_leader?.includes(name)
+  );
+
+  const memberGroups = studyData.filter(
+    (item) =>
+      item.member?.role_member?.includes(name) &&
+      !item.member?.role_leader?.includes(name)
+  );
+
+  const recommendedGroups = studyData.filter(
+    (item) =>
+      !item.member?.role_member?.includes(name) &&
+      !item.member?.role_leader?.includes(name)
+  );
 
   return (
     <div className="w-full h-full flex flex-col bg-white px-24">
@@ -50,14 +72,36 @@ export default function Home() {
           </div>
         </div>
       </div>
+
       {isLoggedIn ? (
         <>
+          {/* 리더 그룹 */}
+          <div className="flex flex-col space-y-5 py-10">
+            <h1 className="font-bold text-4xl text-black text-start">
+              리더인 스터디 그룹
+            </h1>
+            <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
+              {leaderGroups.map((item) => (
+                <Card
+                  key={item.id}
+                  detail={item.detail}
+                  tag={item.tag}
+                  content={item.content}
+                  leader={item.member.role_leader}
+                  like={item.like}
+                  url={`?tab=manage`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* 소속 그룹 */}
           <div className="flex flex-col space-y-5 py-10">
             <h1 className="font-bold text-4xl text-black text-start">
               소속 스터디 그룹
             </h1>
             <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
-              {studyData.map((item) => (
+              {memberGroups.map((item) => (
                 <Card
                   key={item.id}
                   detail={item.detail}
@@ -70,12 +114,14 @@ export default function Home() {
               ))}
             </div>
           </div>
+
+          {/* 추천 그룹 */}
           <div className="flex flex-col space-y-5 py-10">
             <h1 className="font-bold text-4xl text-black text-start">
               추천 스터디 그룹
             </h1>
             <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
-              {studyData.map((item) => (
+              {recommendedGroups.map((item) => (
                 <Card
                   key={item.id}
                   detail={item.detail}
@@ -97,8 +143,8 @@ export default function Home() {
           <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
             {studyData.map((item) => (
               <Card
-                detail={item.detail}
                 key={item.id}
+                detail={item.detail}
                 tag={item.tag}
                 content={item.content}
                 leader={item.member.role_leader}
