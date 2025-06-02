@@ -21,36 +21,42 @@ export default function CreateGroup() {
     if (user) setName(user.name);
   }, []);
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const detail = crypto.randomUUID();
-
-  const newStudy = {
-    id: Date.now(),
-    tag,
-    content,
-    detail,
-    schedule,
-    place,
-    maxMember,
-    fee,
-    like: 0,
-    introduce: "",
-    member: {
-      role_leader: leader,
-      role_member: []
+    if (!tag || !content || !schedule || !place || !maxMember || !fee) {
+      alert("모든 필드를 입력해 주세요.");
+      return;
     }
+
+    const detail = crypto.randomUUID();
+
+    const newStudy = {
+      id: Date.now(),
+      tag,
+      content,
+      detail,
+      schedule,
+      place,
+      maxMember,
+      fee,
+      like: 0,
+      introduce: "",
+      member: {
+        role_leader: leader,
+        role_member: [],
+      },
+    };
+
+    await fetch("/api/newStudy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newStudy),
+    });
+
+    router.push(`/studyGroup/${detail}?tab=manage`);
   };
 
-  await fetch("/api/newStudy", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(newStudy),
-  });
-
-  router.push(`/studyGroup/${detail}?tab=manage`);
-};
 
   return (
     <div className="w-full h-full flex flex-col bg-white px-24 text-black">
