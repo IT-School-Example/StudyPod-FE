@@ -1,9 +1,17 @@
 "use client";
 
 export default function StudyMembers({ study }) {
-  // members가 없으면 안내 메시지
-  if (!study.members || study.members.length === 0) {
-    return <p>아직 등록된 멤버가 없습니다.</p>;
+  const currentEmail = localStorage.getItem("currentUser");
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const user = users.find((u) => u.email === currentEmail);
+  const name = user?.name;
+
+  const isAuthorized =
+    study?.member?.role_leader?.includes(name) ||
+    study?.member?.role_member?.includes(name);
+
+  if (!isAuthorized) {
+    return <p className="text-red-500">접근 권한이 없습니다.</p>;
   }
 
   return (
@@ -12,7 +20,8 @@ export default function StudyMembers({ study }) {
       <ul className="list-disc ml-6 space-y-1">
         {study.members.map((member, index) => (
           <li key={index}>
-            {member.name} - <span className="text-sm text-gray-500">{member.role}</span>
+            {member.name} -{" "}
+            <span className="text-sm text-gray-500">{member.role}</span>
           </li>
         ))}
       </ul>
