@@ -37,17 +37,8 @@ export default function StudyIntro({ study }) {
         <div>
           <h2 className="text-xl font-bold mt-10 mb-2">스터디 그룹 소개</h2>
           <hr className="mb-4" />
-          <p className="leading-relaxed">
-            프로그래밍 언어 중에 가장 간단한 파이썬 같이 공부하실 초심자 분들을
-            모집합니다!!
-            <br />
-            저희는 OO 교재 사용할 예정이고, 입출력문부터 천천히 시작할 거예요!
-            <br />
-            혼자 하기 부담되셨던 분들, 처음 접하는 분들 모두 환영입니다!
-            <br />
-            기초부터 같이 차근차근 공부해봐요
-            <br />
-            관심 있으신 분들은 편하게 신청해주세요!
+          <p className="leading-relaxed whitespace-pre-line">
+            {study.introduce}
           </p>
         </div>
       </div>
