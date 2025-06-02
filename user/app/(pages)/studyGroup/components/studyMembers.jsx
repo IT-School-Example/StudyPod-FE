@@ -1,4 +1,3 @@
-"use client";
 
 export default function StudyMembers({ study }) {
   const currentEmail = localStorage.getItem("currentUser");
@@ -17,14 +16,6 @@ export default function StudyMembers({ study }) {
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">스터디 멤버</h2>
-      <ul className="list-disc ml-6 space-y-1">
-        {study.members.map((member, index) => (
-          <li key={index}>
-            {member.name} -{" "}
-            <span className="text-sm text-gray-500">{member.role}</span>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
