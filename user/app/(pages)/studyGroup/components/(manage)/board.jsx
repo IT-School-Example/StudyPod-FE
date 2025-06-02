@@ -1,29 +1,41 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const initialPosts = [
-  { id: 1, date: '2023-08-09', title: '첫 번째 게시글', views: 123, content: '가나다라마바사' },
-  { id: 2, date: '2023-08-09', title: '두 번째 게시글', views: 50, content: '내용입니다~' },
-  { id: 3, date: '2023-08-09', title: '세 번째 게시글', views: 77, content: '더미 텍스트' },
-];
+const categoryMap = {
+  notice: "공지",
+  free: "자유",
+  qna: "질문",
+  study: "스터디",
+};
 
-export default function Board({study}) {
-  const [posts, setPosts] = useState(initialPosts);
+export default function Board({ study }) {
+  const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
+
+  useEffect(() => {
+    fetch("/boardData.json")
+      .then((res) => res.json())
+      .then((data) => {
+        const filtered = data.filter(
+          (post) => post.study_group_detail === study.detail
+        );
+        setPosts(filtered);
+      });
+  }, [study.detail]);
 
   const handleOpenModal = (post) => {
     setSelectedPost(post);
   };
-  
+
   const handleCloseModal = () => {
     setSelectedPost(null);
   };
 
   const handleDelete = (id) => {
     if (confirm("정말 삭제하시겠습니까?")) {
-      setPosts(posts.filter((post) => post.id !== id));
-      // 모달이 열려 있고 해당 게시글을 삭제한 경우 닫기
-      if (selectedPost?.id === id) {
+      const updated = posts.filter((post) => post.board_id !== id);
+      setPosts(updated);
+      if (selectedPost?.board_id === id) {
         handleCloseModal();
       }
     }
@@ -31,22 +43,24 @@ export default function Board({study}) {
 
   return (
     <div>
-      <table className="w-full border border-gray-300 mb-5 border-collapse">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="border p-2">번호</th>
-            <th className="border p-2">날짜</th>
-            <th className="border p-2">제목</th>
-            <th className="border p-2">조회수</th>
-            <th className="border p-2">관리</th>
+      <table className="w-full text-sm table-fixed">
+        <thead className="border-b text-gray-700 bg-gray-50">
+          <tr className="text-center">
+            <th className="p-2 w-12">번호</th>
+            <th className="p-2 w-20">분류</th>
+            <th className="p-2 w-28">날짜</th>
+            <th className="p-2 text-left">제목</th>
+            <th className="p-2 w-16">조회수</th>
+            <th className="p-2 w-16">관리</th>
           </tr>
         </thead>
         <tbody>
           {posts.map((post) => (
-            <tr key={post.id}>
-              <td className="border p-2 text-center">{post.id}</td>
-              <td className="border p-2 text-center">{post.date}</td>
-              <td className="border p-2 text-left">
+            <tr key={post.board_id} className="hover:bg-gray-100 border-b text-center">
+              <td className="p-2">{post.board_id}</td>
+              <td className="p-2">{categoryMap[post.category] || post.category}</td>
+              <td className="p-2">{post.date}</td>
+              <td className="p-2 text-left">
                 <button
                   onClick={() => handleOpenModal(post)}
                   className="text-blue-600 hover:underline"
@@ -54,10 +68,10 @@ export default function Board({study}) {
                   {post.title}
                 </button>
               </td>
-              <td className="border p-2 text-center">{post.views}</td>
-              <td className="border p-2 text-center">
+              <td className="p-2">{post.views}</td>
+              <td className="p-2">
                 <button
-                  onClick={() => handleDelete(post.id)}
+                  onClick={() => handleDelete(post.board_id)}
                   className="text-red-500 hover:underline"
                 >
                   삭제
@@ -68,29 +82,35 @@ export default function Board({study}) {
         </tbody>
       </table>
 
-      <div className="text-center space-x-2">
-        <button className="px-3 py-1 border rounded font-bold hover:bg-gray-200">이전</button>
-        <button className="px-3 py-1 border bg-gray-100 rounded hover:bg-gray-200">1</button>
-        <button className="px-3 py-1 border bg-gray-100 rounded hover:bg-gray-200">2</button>
-        <button className="px-3 py-1 border bg-gray-100 rounded hover:bg-gray-200">3</button>
-        <button className="px-3 py-1 border rounded font-bold hover:bg-gray-200">다음</button>
-      </div>
-
       {/* 모달 */}
       {selectedPost && (
         <div
-          className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
           onClick={handleCloseModal}
         >
           <div
             className="bg-white p-6 rounded shadow-md max-w-md w-full"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold mb-4">{selectedPost.title}</h2>
-            <p className="mb-4">{selectedPost.content}</p>
+            <h2 className="text-xl font-bold mb-1">{selectedPost.title}</h2>
+            <div className="mb-4 text-sm text-gray-600">
+              분류: <span className="font-semibold">{categoryMap[selectedPost.category] || selectedPost.category}</span>
+            </div>
+
+            <p className="mb-4 whitespace-pre-wrap">{selectedPost.content}</p>
+
+            <div className="mt-4">
+              <h3 className="font-semibold mb-2">댓글</h3>
+              <ul className="list-disc pl-5 space-y-1">
+                {selectedPost.comments?.map((c) => (
+                  <li key={c.id}>{c.content}</li>
+                ))}
+              </ul>
+            </div>
+
             <button
               onClick={handleCloseModal}
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               닫기
             </button>
