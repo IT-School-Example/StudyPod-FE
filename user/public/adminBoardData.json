@@ -2,7 +2,7 @@
   {
     "board_id": 5,
     "category": "faq",
-    "title": "공지테스트",
+    "title": "faq테스트",
     "content": "공지사항 테스트 입니다",
     "user_id": "dddd",
     "views": 0,
