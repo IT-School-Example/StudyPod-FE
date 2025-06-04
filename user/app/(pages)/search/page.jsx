@@ -26,7 +26,7 @@ export default function Search() {
         (item) =>
           item.tag.toLowerCase().includes(lower) ||
           item.content.toLowerCase().includes(lower) ||
-          item.leader.toLowerCase().includes(lower)
+          item.member.role_leader.toLowerCase().includes(lower)
       )
     );
   }, [query, studyData]);
