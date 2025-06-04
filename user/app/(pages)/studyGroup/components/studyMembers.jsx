@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import ViewBoard from "./(studyMembers)/viewBoard";
-import PostBoard from "./(studyMembers)/postBoard";
+import ViewBoard from "@/app/components/viewBoard";
+import PostBoard from "@/app/components/postBoard";
 
 export default function StudyMembers({ study }) {
   const currentEmail = localStorage.getItem("currentUser");
