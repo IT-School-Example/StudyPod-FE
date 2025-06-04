@@ -3,9 +3,7 @@ import { useState, useEffect } from "react";
 
 const categoryMap = {
   notice: "공지",
-  free: "자유",
-  qna: "질문",
-  study: "스터디",
+  free: "자유"
 };
 
 export default function Board({ study }) {
@@ -13,7 +11,7 @@ export default function Board({ study }) {
   const [selectedPost, setSelectedPost] = useState(null);
 
   useEffect(() => {
-    fetch("/boardData.json")
+    fetch("/studyBoardData.json")
       .then((res) => res.json())
       .then((data) => {
         const filtered = data.filter(
