@@ -5,7 +5,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
 
-    const filePath = path.join(process.cwd(), 'public', 'boardData.json');
+    const filePath = path.join(process.cwd(), 'public', 'studyBoardData.json');
     const fileData = await fs.readFile(filePath, 'utf-8');
     const boardList = JSON.parse(fileData);
 
