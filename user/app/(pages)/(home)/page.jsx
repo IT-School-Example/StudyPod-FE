@@ -38,7 +38,7 @@ export default function Home() {
   const memberGroups = studyData.filter(
     (item) =>
       item.member?.role_member?.includes(name) &&
-      !item.member?.role_leader?.includes(name)
+      item.member?.role_leader?.includes(name)
   );
 
   const recommendedGroups = studyData.filter(
@@ -76,44 +76,49 @@ export default function Home() {
       {isLoggedIn ? (
         <>
           {/* 리더 그룹 */}
-          <div className="flex flex-col space-y-5 py-10">
-            <h1 className="font-bold text-4xl text-black text-start">
-              리더인 스터디 그룹
-            </h1>
-            <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
-              {leaderGroups.map((item) => (
-                <Card
-                  key={item.id}
-                  detail={item.detail}
-                  tag={item.tag}
-                  content={item.content}
-                  leader={item.member.role_leader}
-                  like={item.like}
-                  url={`?tab=manage`}
-                />
-              ))}
+          {leaderGroups?.length > 0 && (
+            <div className="flex flex-col space-y-5 py-10">
+              <h1 className="font-bold text-4xl text-black text-start">
+                리더인 스터디 그룹
+              </h1>
+              <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
+                {leaderGroups.map((item) => (
+                  <Card
+                    key={item.id}
+                    detail={item.detail}
+                    tag={item.tag}
+                    content={item.content}
+                    leader={item.member.role_leader}
+                    like={item.like}
+                    url={`?tab=manage`}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* 소속 그룹 */}
-          <div className="flex flex-col space-y-5 py-10">
-            <h1 className="font-bold text-4xl text-black text-start">
-              소속 스터디 그룹
-            </h1>
-            <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
-              {memberGroups.map((item) => (
-                <Card
-                  key={item.id}
-                  detail={item.detail}
-                  tag={item.tag}
-                  content={item.content}
-                  leader={item.member.role_leader}
-                  like={item.like}
-                  url={`?tab=members`}
-                />
-              ))}
+          {memberGroups?.length > 0 && (
+            <div className="flex flex-col space-y-5 py-10">
+              <h1 className="font-bold text-4xl text-black text-start">
+                소속 스터디 그룹
+              </h1>
+              <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
+                {memberGroups.map((item) => (
+                  <Card
+                    key={item.id}
+                    detail={item.detail}
+                    tag={item.tag}
+                    content={item.content}
+                    leader={item.member.role_leader}
+                    like={item.like}
+                    url={`?tab=members`}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
 
           {/* 추천 그룹 */}
           <div className="flex flex-col space-y-5 py-10">
