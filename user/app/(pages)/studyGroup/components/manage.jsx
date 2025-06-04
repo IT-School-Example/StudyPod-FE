@@ -16,7 +16,7 @@ export default function Manage({ study }) {
 
   const isLeader = study?.member?.role_leader?.includes(name);
 
-  const [tab, setTab] = useState("member");
+  const [tab, setTab] = useState("info");
 
   const tabs = [
     { key: "info", label:"스터디 정보 관리"},
