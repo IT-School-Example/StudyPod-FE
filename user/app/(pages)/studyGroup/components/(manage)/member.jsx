@@ -4,7 +4,7 @@ export default function Member({ study }) {
   const rows = studyList.flatMap((item, studyIndex) => {
     const members = [
       { name: item.member.role_leader, role: "리더" },
-      ...(item.member.role_member || []).map(name => ({ name, role: "일반회원" })),
+      ...(item.member.role_member || []).map(name => ({ name, role: "일반회원" })),  
     ];
     return members.map((member, memberIndex) => ({
       studyName: item.detail,
