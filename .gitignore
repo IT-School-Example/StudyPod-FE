@@ -1,10 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/admin/node_modules
-/user/node_modules
-/admin/.pnp
-/user/.pnp
+/node_modules
+/.pnp
 .pnp.js
 .yarn/*
 !.yarn/patches
@@ -33,8 +31,8 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # next.js
-/user/.next/
-/user/out/
+/.next/
+/out/
 
 
 # env files (can opt-in for committing if needed)
