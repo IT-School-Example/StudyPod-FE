@@ -57,7 +57,7 @@ export default function Introduce({ study }) {
         ) : (
           <button
             onClick={() => setEditMode(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+            className="bg-[#4B2E1E] text-white px-4 py-2 rounded hover:bg-[#3e2619]"
           >
             수정하기
           </button>

@@ -67,13 +67,13 @@ export default function Login() {
           </button>
           <div className="flex gap-2 justify-center text-center">
             <Link
-              href="/signupPage"
+              href="/signup"
               className="flex-1 py-2 rounded-md bg-gray-100 text-black font-medium"
             >
               <h1>비밀번호 찾기</h1>
             </Link>
             <Link
-              href="/signupPage"
+              href="/signup"
               className="flex-1 py-2 rounded-md bg-gray-100 text-black font-medium"
             >
               <h1>회원가입</h1>
