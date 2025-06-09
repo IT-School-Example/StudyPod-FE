@@ -35,6 +35,7 @@ export default function Belong() {
               tag={group.tag}
               detail={group.detail}
               isLeader={group.member.role_leader?.includes(name)}
+              url={`?tab=members`}
             />
           ))}
         </div>

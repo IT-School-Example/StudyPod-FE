@@ -164,6 +164,7 @@ export default function Search() {
               leader={item.member.role_leader}
               like={item.like}
               detail={item.detail}
+              url={`?tab=intro`}
             />
           ))
         ) : (

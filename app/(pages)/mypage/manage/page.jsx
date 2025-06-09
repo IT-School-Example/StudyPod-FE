@@ -33,6 +33,7 @@ export default function Manage() {
               tag={group.tag}
               detail={group.detail}
               isLeader={true}
+              url={`?tab=manage`}
             />
           ))}
         </div>
