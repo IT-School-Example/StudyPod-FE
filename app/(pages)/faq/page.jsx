@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/app/components/Navbar";
 import ViewBoard from "@/app/components/viewBoard";
-import PostBoard from "@/app/components/postBoard";
 
 export default function Faq() {
   const [tab, setTab] = useState("notice");
