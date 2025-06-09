@@ -2,8 +2,8 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Navbar from "@/app/components/Navbar";
-import StudyIntro from "../components/StudyIntro";
-import StudyMembers from "../components/StudyMembers";
+import StudyIntro from "../components/studyIntro";
+import StudyMembers from "../components/studyMembers";
 import Enrollment from "../components/enrollment";
 import Manage from "../components/manage";
 
