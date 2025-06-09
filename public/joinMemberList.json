@@ -26,5 +26,40 @@
     "introduce": "dddd",
     "status": "pending",
     "studyDetail": "python-study"
+  },
+  {
+    "id": 1749439496615,
+    "user": "dfdf",
+    "introduce": "fdfdf",
+    "status": "pending",
+    "studyDetail": "javascript-study"
+  },
+  {
+    "id": 1749439499658,
+    "user": "dfdf",
+    "introduce": "fdfdf",
+    "status": "pending",
+    "studyDetail": "react-study"
+  },
+  {
+    "id": 1749441486209,
+    "user": "22",
+    "introduce": "123132",
+    "status": "pending",
+    "studyDetail": "python-study"
+  },
+  {
+    "id": 1749442557198,
+    "user": "22",
+    "introduce": "ㅇㅇ",
+    "status": "pending",
+    "studyDetail": "python-study"
+  },
+  {
+    "id": 1749446266056,
+    "user": "22",
+    "introduce": "ㅇㄹㅇ",
+    "status": "pending",
+    "studyDetail": "javascript-study"
   }
 ]
