@@ -78,12 +78,11 @@ export default function Home() {
         <>
           {leaderGroups?.length > 0 && (
             <div className="flex flex-col space-y-5 py-10">
-              <div className="flex flex-col space-y-5 py-10">
-                <div className="flex justify-between items-center">
-                  <h1 className="font-bold text-2xl text-black">관리 스터디</h1>
-                  <Link href="/mypage/manage">
-                    <span className="text-sm text-gray-500 ml-2">전체 보기</span>
-                  </Link>
+              <div className="flex justify-between items-center">
+                <h1 className="font-bold text-2xl text-black">관리 스터디</h1>
+                <Link href="/mypage/manage">
+                  <span className="text-sm text-gray-500 ml-2">전체 보기</span>
+                </Link>
                 </div>
               </div>
               <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
@@ -105,11 +104,11 @@ export default function Home() {
           {/* 소속 그룹 */}
           {memberGroups?.length > 0 && (
             <div className="flex flex-col space-y-5 py-10">
-              <div className="flex flex-col space-y-5 py-10">
-                <div className="flex justify-between items-center">
-                  <h1 className="font-bold text-2xl text-black">소속 스터디</h1>
-                  <Link href="/mypage/belong">
-                    <span className="text-sm text-gray-500 ml-2">전체 보기</span>
+              <div className="flex justify-between items-center">
+                <h1 className="font-bold text-2xl text-black">소속 스터디</h1>
+                <Link href="/mypage/belong">
+                  <span className="text-sm text-gray-500 ml-2">전체 보기</span>
+                </Link>
                   </Link>
                 </div>
               </div>
