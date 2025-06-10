@@ -25,10 +25,11 @@ export default function Home() {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         console.log(process.env.NEXT_PUBLIC_API_URL);
-        const res = await fetch(`${apiUrl}/study-groups`, {
+        const res = await fetch(`${apiUrl}/api/study-groups`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Origin': window.location.origin,
           },
           credentials: 'include'
         }); 
@@ -65,7 +66,6 @@ export default function Home() {
       !item.member?.role_member?.includes(name) &&
       !item.member?.role_leader?.includes(name)
   );
-
   return (
     <div className="w-full h-full flex flex-col bg-white px-24">
       <Navbar />

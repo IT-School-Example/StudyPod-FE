@@ -10,6 +10,30 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoggedIn, SetIsLoggedIn] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+
+      document.cookie = `token=${data.token}; path=/; max-age=3600`;
+      localStorage.setItem("currentUser", email);
+      SetIsLoggedIn(true);
+      router.push("/");
+    } else {
+      alert("이메일 또는 비밀번호가 올바르지 않습니다.");
+    }
+  };
+
   return (
     <div className="flex flex-row justify-between">
       <div className="w-full h-screen flex items-center justify-center bg-[#faeed5]">
@@ -47,20 +71,7 @@ export default function Login() {
             />
           </div>
           <button
-            onClick={() => {
-              const users = JSON.parse(localStorage.getItem("users")) || [];
-              const found = users.find(
-                (u) => u.email === email && u.password === password
-              );
-              if (found) {
-                localStorage.setItem("isLoggedIn", "true");
-                localStorage.setItem("currentUser", found.email);
-                SetIsLoggedIn(true);
-                router.push("/");
-              } else {
-                alert("이메일 또는 비밀번호가 올바르지 않습니다.");
-              }
-            }}
+            onClick={handleLogin}
             className="w-full py-3 rounded-md bg-[#4B2E1E] text-white font-semibold mb-6"
           >
             로그인
