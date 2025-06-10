@@ -20,10 +20,29 @@ export default function Home() {
     const users = JSON.parse(localStorage.getItem("users")) || [];
     const user = users.find((u) => u.email === currentEmail);
     if (user) setName(user.name);
+    
+    const fetchStudyGroups = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        console.log(process.env.NEXT_PUBLIC_API_URL);
+        const res = await fetch(`${apiUrl}/study-groups`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
+        }); 
+        if (!res.ok) throw new Error("1. Failed to fetch study groups");
+        const data = await res.json();
+        if (!data) console.log(2-1);
+        console.log(2-2, data);
+        setStudyData(data.data || []);
+      } catch (error) {
+        console.error("3. Error fetching study groups:", error);
+      }
+    }
 
-    fetch("/studyData.json")
-      .then((res) => res.json())
-      .then((data) => setStudyData(data));
+    fetchStudyGroups();
   }, []);
 
   const handleMouseMove = (e) => {
@@ -32,16 +51,15 @@ export default function Home() {
     setOffset({ y });
   };
 
+  // 그룹 필터링 (리더, 소속, 추천 그룹)
   const leaderGroups = studyData.filter((item) =>
     item.member?.role_leader?.includes(name)
   );
-
   const memberGroups = studyData.filter(
     (item) =>
       item.member?.role_member?.includes(name) ||
       item.member?.role_leader?.includes(name)
   );
-
   const recommendedGroups = studyData.filter(
     (item) =>
       !item.member?.role_member?.includes(name) &&
@@ -83,25 +101,23 @@ export default function Home() {
                 <Link href="/mypage/manage">
                   <span className="text-sm text-gray-500 ml-2">전체 보기</span>
                 </Link>
-                </div>
               </div>
               <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
                 {leaderGroups.map((item) => (
                   <StudyCard
                     key={item.id}
-                    detail={item.detail}
-                    tag={item.tag}
-                    content={item.content}
-                    leader={item.member.role_leader}
-                    like={item.like}
-                    url={`?tab=manage`}
+                    detail={item.id}
+                    tag={item.keywords[1]}
+                    content={item.title}  // 간단한 설명
+                    leader={item.leader}
+                    like={4}
+                    url={`?tab=manage`}  // 관리 그룹으로 이동
                   />
                 ))}
               </div>
             </div>
           )}
 
-          {/* 소속 그룹 */}
           {memberGroups?.length > 0 && (
             <div className="flex flex-col space-y-5 py-10">
               <div className="flex justify-between items-center">
@@ -109,21 +125,16 @@ export default function Home() {
                 <Link href="/mypage/belong">
                   <span className="text-sm text-gray-500 ml-2">전체 보기</span>
                 </Link>
-                  </Link>
-                </div>
               </div>
-
-
-
               <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
                 {memberGroups.map((item) => (
                   <StudyCard
                     key={item.id}
-                    detail={item.detail}
-                    tag={item.tag}
-                    content={item.content}
-                    leader={item.member.role_leader}
-                    like={item.like}
+                    detail={item.id}
+                    tag={item.keywords[1]}
+                    content={item.title}
+                    leader={item.leader}
+                    like={4}
                     url={`?tab=members`}
                   />
                 ))}
@@ -131,8 +142,6 @@ export default function Home() {
             </div>
           )}
 
-
-          {/* 추천 그룹 */}
           <div className="flex flex-col space-y-5 py-10">
             <h1 className="font-bold text-4xl text-black text-start">
               추천 스터디 그룹
@@ -141,11 +150,11 @@ export default function Home() {
               {recommendedGroups.map((item) => (
                 <StudyCard
                   key={item.id}
-                  detail={item.detail}
-                  tag={item.tag}
-                  content={item.content}
-                  leader={item.member.role_leader}
-                  like={item.like}
+                  detail={item.id}
+                  tag={item.keywords[1]}
+                  content={item.title}
+                  leader={item.leader}
+                  like={4}
                   url={`?tab=intro`}
                 />
               ))}
@@ -161,11 +170,11 @@ export default function Home() {
             {studyData.map((item) => (
               <StudyCard
                 key={item.id}
-                detail={item.detail}
-                tag={item.tag}
-                content={item.content}
-                leader={item.member.role_leader}
-                like={item.like}
+                detail={item.id}
+                tag={item.keywords[1]}
+                content={item.title}
+                leader={item.leader}
+                like={4}
                 url={`?tab=intro`}
               />
             ))}
