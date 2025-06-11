@@ -9,16 +9,23 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const status = localStorage.getItem("isLoggedIn") === "true";
-    setIsLoggedIn(status);
+    const user = localStorage.getItem("currentUser");
+    setIsLoggedIn(!!user);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.setItem("isLoggedIn", "false");
-    setIsLoggedIn(false);
-    // 필요하다면 페이지 리로드나 이동
-    // window.location.reload();
-    // or router.push('/')
+  const handleLogout = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/logout`, {
+        method: "POST",
+        credentials: "include", // 쿠키 전송 필요
+      });
+
+      localStorage.removeItem("currentUser");
+      setIsLoggedIn(false);
+      window.location.href = "/"; // 홈으로 리디렉션
+    } catch (error) {
+      console.error("로그아웃 실패:", error);
+    }
   };
 
   return (
@@ -63,7 +70,7 @@ export default function Navbar() {
                 className="text-black mt-1 hover:text-red-600 transition-colors"
                 aria-label="로그아웃"
               >
-                <IoExitOutline size={20}/>
+                <IoExitOutline size={20} />
               </button>
             </>
           ) : (
