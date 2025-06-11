@@ -19,12 +19,6 @@ export default function Info() {
     }
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("currentUser");
-    router.push("/");
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -44,7 +38,7 @@ export default function Info() {
   if (!user) return null;
 
   return (
-    <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+    <div>
       <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
         마이페이지
       </h1>
@@ -117,10 +111,9 @@ export default function Info() {
       </div>
 
       <button
-        onClick={handleLogout}
         className="w-full mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-xl transition"
       >
-        로그아웃
+        회원삭제
       </button>
     </div>
   );
