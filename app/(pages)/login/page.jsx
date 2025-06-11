@@ -19,13 +19,15 @@ export default function Login() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({
+        data:{ email, password }
+      }),
     });
 
     if (response.ok) {
-      const data = await response.json();
+      const text = await response.text();
+      console.log("응답 내용:", text);
 
-      document.cookie = `token=${data.token}; path=/; max-age=3600`;
       localStorage.setItem("currentUser", email);
       SetIsLoggedIn(true);
       router.push("/");
