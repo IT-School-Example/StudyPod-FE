@@ -23,12 +23,11 @@ export default function Home() {
     
     const fetchStudyGroups = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-        console.log(process.env.NEXT_PUBLIC_API_URL);
-        const res = await fetch(`${apiUrl}/study-groups`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Origin': window.location.origin,
           },
           credentials: 'include'
         }); 
@@ -65,7 +64,6 @@ export default function Home() {
       !item.member?.role_member?.includes(name) &&
       !item.member?.role_leader?.includes(name)
   );
-
   return (
     <div className="w-full h-full flex flex-col bg-white px-24">
       <Navbar />
@@ -107,9 +105,9 @@ export default function Home() {
                   <StudyCard
                     key={item.id}
                     detail={item.id}
-                    tag={item.keywords[1]}
-                    content={item.title}  // 간단한 설명
-                    leader={item.leader}
+                    tag={item.keywords[0]}  // 첫 번째 키워드 사용
+                    content={item.title}
+                    leader={`ID: ${item.leader.id}`}  // 또는 제거해도 됨
                     like={4}
                     url={`?tab=manage`}  // 관리 그룹으로 이동
                   />
@@ -131,9 +129,9 @@ export default function Home() {
                   <StudyCard
                     key={item.id}
                     detail={item.id}
-                    tag={item.keywords[1]}
+                    tag={item.keywords[0]}  // 첫 번째 키워드 사용
                     content={item.title}
-                    leader={item.leader}
+                    leader={`ID: ${item.leader.id}`}  // 또는 제거해도 됨
                     like={4}
                     url={`?tab=members`}
                   />
@@ -151,9 +149,9 @@ export default function Home() {
                 <StudyCard
                   key={item.id}
                   detail={item.id}
-                  tag={item.keywords[1]}
+                  tag={item.keywords[0]}  // 첫 번째 키워드 사용
                   content={item.title}
-                  leader={item.leader}
+                  leader={`ID: ${item.leader.id}`}  // 또는 제거해도 됨
                   like={4}
                   url={`?tab=intro`}
                 />
@@ -171,9 +169,9 @@ export default function Home() {
               <StudyCard
                 key={item.id}
                 detail={item.id}
-                tag={item.keywords[1]}
+                tag={item.keywords[0]}  // 첫 번째 키워드 사용
                 content={item.title}
-                leader={item.leader}
+                leader={`ID: ${item.leader.id}`}  // 또는 제거해도 됨
                 like={4}
                 url={`?tab=intro`}
               />
