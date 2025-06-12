@@ -17,12 +17,12 @@ export default function Navbar() {
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/logout`, {
         method: "POST",
-        credentials: "include", // 쿠키 전송 필요
+        credentials: "include", 
       });
 
       localStorage.removeItem("currentUser");
       setIsLoggedIn(false);
-      window.location.href = "/"; // 홈으로 리디렉션
+      window.location.href = "/";
     } catch (error) {
       console.error("로그아웃 실패:", error);
     }
