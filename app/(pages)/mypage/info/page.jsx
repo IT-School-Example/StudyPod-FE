@@ -7,85 +7,194 @@ export default function Info() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState({ name: "", password: "" });
+  const [formData, setFormData] = useState({
+    email: "",
+    nickname: "",
+    password: "",
+    code: "",
+  });
+  const [codeVerified, setCodeVerified] = useState(false);
 
   useEffect(() => {
-    const currentEmail = localStorage.getItem("currentUser");
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const userData = users.find((u) => u.email === currentEmail);
-    if (userData) {
-      setUser(userData);
-      setFormData({ name: userData.name || "", password: userData.password || "" });
-    }
-  }, []);
+    const fetchUserInfo = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("회원 정보를 불러올 수 없습니다");
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("currentUser");
-    router.push("/");
-  };
+        const data = await res.json();
+        setUser(data);
+        setFormData({ email: data.email, nickname: data.nickname || "", password: "", code: "" });
+      } catch (err) {
+        console.error(err);
+        alert("로그인 상태가 만료되었거나 유효하지 않습니다.");
+        router.push("/login");
+      }
+    };
+    fetchUserInfo();
+  }, [router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const updatedUsers = users.map((u) =>
-      u.email === user.email ? { ...u, ...formData } : u
-    );
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-    setUser((prev) => ({ ...prev, ...formData }));
-    setEditMode(false);
-    alert("회원 정보가 수정되었습니다.");
+  const handleSendCode = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/mailSend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receiverEmail: formData.email }),
+      });
+      if (!res.ok) throw new Error();
+      alert("인증 코드가 전송되었습니다.");
+    } catch {
+      alert("이메일 인증 코드 전송 실패");
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/mailCheck`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email, code: formData.code }),
+      });
+      if (!res.ok) throw new Error();
+      setCodeVerified(true);
+      alert("이메일 인증 완료!");
+    } catch {
+      alert("인증코드가 일치하지 않습니다.");
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    if (formData.email !== user.email && !codeVerified) {
+      alert("이메일을 변경하려면 인증이 필요합니다.");
+      return;
+    }
+
+    try {
+      if (formData.nickname !== user.nickname) {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/update-nickname/${user.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ data: { nickname: formData.nickname } }),
+        });
+      }
+      if (formData.password.trim() !== "") {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/update-pw/${user.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ data: { password: formData.password } }),
+        });
+      }
+      if (formData.email !== user.email && codeVerified) {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/update-email/${user.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ data: { email: formData.email } }),
+        });
+      }
+
+      alert("회원 정보가 수정되었습니다.");
+      setEditMode(false);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert("회원 정보 수정에 실패했습니다.");
+    }
+  };
+
+  const handleDelete = async () => {
+    const confirmDelete = confirm("정말로 회원 탈퇴하시겠습니까?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/signout`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("회원 탈퇴 실패");
+
+      localStorage.removeItem("currentUser");
+
+      alert("탈퇴가 완료되었습니다.");
+      router.push("/");
+    } catch (err) {
+      console.error(err);
+      alert("회원 탈퇴 중 오류가 발생했습니다.");
+    }
   };
 
   if (!user) return null;
 
   return (
-    <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
-      <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
-        마이페이지
-      </h1>
+    <div>
+      <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">마이페이지</h1>
 
       <div className="space-y-4 text-gray-700 mb-8">
-        <p>
-          <span className="font-medium">이메일:</span> {user.email}
-        </p>
-
         {editMode ? (
           <>
-            <p>
-              <span className="font-medium">이름:</span>{" "}
+            <div>
+              <label className="block font-medium">이메일</label>
               <input
-                type="text"
-                name="name"
-                value={formData.name}
+                name="email"
+                type="email"
+                value={formData.email}
                 onChange={handleChange}
-                className="border rounded px-2 py-1 ml-2"
+                className="border rounded px-2 py-1 w-full"
               />
-            </p>
-            <p>
-              <span className="font-medium">비밀번호:</span>{" "}
+              {formData.email !== user.email && (
+                <div className="mt-2 flex gap-2">
+                  <button onClick={handleSendCode} className="bg-gray-300 px-3 py-1 rounded">인증코드 발송</button>
+                  <input
+                    name="code"
+                    type="text"
+                    value={formData.code}
+                    onChange={handleChange}
+                    placeholder="인증코드 입력"
+                    className="border rounded px-2 py-1"
+                  />
+                  <button onClick={handleVerifyCode} className="bg-blue-500 text-white px-3 py-1 rounded">확인</button>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block font-medium">닉네임</label>
               <input
-                type="password"
+                name="nickname"
+                value={formData.nickname}
+                onChange={handleChange}
+                className="border rounded px-2 py-1 w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block font-medium">비밀번호</label>
+              <input
                 name="password"
+                type="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="border rounded px-2 py-1 ml-2"
+                className="border rounded px-2 py-1 w-full"
               />
-            </p>
+            </div>
           </>
         ) : (
           <>
-            <p>
-              <span className="font-medium">이름:</span>{" "}
-              {user.name || "저장된 이름 없음"}
-            </p>
-            <p>
-              <span className="font-medium">비밀번호:</span> {user.password}
-            </p>
+            <p><span className="font-medium">이메일:</span> {user.email}</p>
+            <p><span className="font-medium">이름:</span> {user.name}</p>
+            <p><span className="font-medium">닉네임:</span> {user.nickname || "없음"}</p>
           </>
         )}
       </div>
@@ -93,34 +202,19 @@ export default function Info() {
       <div className="flex space-x-2">
         {editMode ? (
           <>
-            <button
-              onClick={handleSave}
-              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-xl transition"
-            >
-              저장
-            </button>
-            <button
-              onClick={() => setEditMode(false)}
-              className="flex-1 bg-gray-300 hover:bg-gray-400 text-black font-semibold py-2 px-4 rounded-xl transition"
-            >
-              취소
-            </button>
+            <button onClick={handleSave} className="flex-1 bg-blue-500 text-white py-2 rounded">저장</button>
+            <button onClick={() => setEditMode(false)} className="flex-1 bg-gray-300 py-2 rounded">취소</button>
           </>
         ) : (
-          <button
-            onClick={() => setEditMode(true)}
-            className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-xl transition"
-          >
-            회원 정보 수정
-          </button>
+          <button onClick={() => setEditMode(true)} className="w-full bg-yellow-500 text-white py-2 rounded">회원 정보 수정</button>
         )}
       </div>
 
-      <button
-        onClick={handleLogout}
-        className="w-full mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-xl transition"
+      <button 
+        onClick={handleDelete}
+        className="w-full mt-4 bg-red-500 text-white py-2 rounded"
       >
-        로그아웃
+        회원 삭제
       </button>
     </div>
   );

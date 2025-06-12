@@ -27,7 +27,6 @@ export default function Home() {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Origin': window.location.origin,
           },
           credentials: 'include'
         }); 

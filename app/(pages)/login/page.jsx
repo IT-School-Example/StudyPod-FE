@@ -19,14 +19,15 @@ export default function Login() {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify({
         data:{ email, password }
       }),
     });
 
     if (response.ok) {
-      const text = await response.text();
-      console.log("응답 내용:", text);
+      // const text = await response.text();
+      // console.log("응답 내용:", text);
 
       localStorage.setItem("currentUser", email);
       SetIsLoggedIn(true);
@@ -80,7 +81,7 @@ export default function Login() {
           </button>
           <div className="flex gap-2 justify-center text-center">
             <Link
-              href="/signup"
+              href="/findPW"
               className="flex-1 py-2 rounded-md bg-gray-100 text-black font-medium"
             >
               <h1>비밀번호 찾기</h1>

@@ -1,4 +1,5 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useReducer } from "react";
@@ -8,7 +9,6 @@ const initialState = {
   step: 1,
   email: "",
   code: "",
-  name: "",
   password: "",
   confirmPassword: "",
   showPassword: false,
@@ -31,43 +31,19 @@ const reducer = (state, action) => {
   }
 };
 
-export default function SignUp() {
+export default function FindPW() {
   const router = useRouter();
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { step, email, code, name, password, confirmPassword, showPassword, showConfirmPassword, codeVerified } = state;
-
-  const handleSignUp = async (e) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
-      alert("비밀번호가 일치하지 않습니다.");
-      return;
-    }
-
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          data: {
-            email,
-            password,
-            name,
-            nickname:null,
-            role: "ROLE_USER",
-          },
-        }),
-      });
-
-      if (!response.ok) throw new Error("회원가입 실패");
-
-      localStorage.setItem("currentUser", email);
-      alert("회원가입이 완료되었습니다.");
-      router.push("/");
-    } catch (error) {
-      console.error("회원가입 오류:", error);
-      alert("회원가입 중 문제가 발생했습니다.");
-    }
-  };
+  const {
+    step,
+    email,
+    code,
+    password,
+    confirmPassword,
+    showPassword,
+    showConfirmPassword,
+    codeVerified,
+  } = state;
 
   const handleSendCode = async () => {
     try {
@@ -79,7 +55,6 @@ export default function SignUp() {
       if (!res.ok) throw new Error("인증코드 전송 실패");
       alert("인증코드가 전송되었습니다.");
     } catch (err) {
-      // console.error(err);
       alert("인증코드 전송에 실패했습니다.");
     }
   };
@@ -95,8 +70,40 @@ export default function SignUp() {
       dispatch({ type: "SET_VERIFIED" });
       alert("인증이 완료되었습니다.");
     } catch (err) {
-      console.error(err);
       alert("인증코드가 일치하지 않습니다.");
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    if (!codeVerified) {
+      alert("이메일 인증을 완료해주세요.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/find-pw/${email}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data: {
+            password: password,
+          },
+        }),
+      });
+
+      if (!response.ok) throw new Error("비밀번호 재설정 실패");
+
+      alert("비밀번호가 성공적으로 재설정되었습니다.");
+      router.push("/login");
+    } catch (error) {
+      alert("비밀번호 재설정 중 오류가 발생했습니다.");
     }
   };
 
@@ -108,7 +115,7 @@ export default function SignUp() {
 
       <div className="w-full h-screen flex items-center justify-center bg-white">
         <div className="w-full max-w-sm p-6">
-          <h1 className="text-2xl font-bold text-center mb-10 text-black">회원가입</h1>
+          <h1 className="text-2xl font-bold text-center mb-10 text-black">비밀번호 재설정</h1>
 
           {step === 1 ? (
             <>
@@ -147,18 +154,8 @@ export default function SignUp() {
             </>
           ) : (
             <>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-600 mb-1">이름</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => dispatch({ type: "SET_FIELD", field: "name", value: e.target.value })}
-                  className="w-full border rounded-md px-4 py-2 outline-none"
-                />
-              </div>
-
               <div className="mb-1">
-                <label className="block text-sm font-medium text-gray-600 mb-1">비밀번호</label>
+                <label className="block text-sm font-medium text-gray-600 mb-1">새 비밀번호</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -192,8 +189,8 @@ export default function SignUp() {
                 </div>
               </div>
 
-              <button className="w-full py-3 rounded-md bg-[#4B2E1E] text-white font-semibold" onClick={handleSignUp}>
-                회원가입
+              <button className="w-full py-3 rounded-md bg-[#4B2E1E] text-white font-semibold" onClick={handleResetPassword}>
+                비밀번호 재설정
               </button>
             </>
           )}
