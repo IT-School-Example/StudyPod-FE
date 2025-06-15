@@ -1,83 +1,107 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "@/app/components/Navbar";
 import StudyCard from "@/app/components/card/studyCard";
 
+const subjectOptions = [
+  { value: "LANGUAGE", label: "어학 관련 스터디" },
+  { value: "IT", label: "IT 및 프로그래밍 관련 스터디" },
+  { value: "EXAM", label: "자격증 취득 및 시험 준비 스터디" },
+  { value: "JOB", label: "취업 준비 및 경력 개발 스터디" },
+  { value: "SCHOOL", label: "학교 과목 관련 스터디" },
+  { value: "HOBBY", label: "취미 및 자기 계발 스터디" },
+  { value: "CULTURE", label: "문화 및 예술 관련 스터디" },
+  { value: "SCIENCE", label: "과학 관련 스터디" },
+  { value: "HUMANITIES", label: "인문학 관련 스터디" },
+  { value: "BUSINESS", label: "경영 및 경제 관련 스터디" },
+  { value: "ETC", label: "기타 분야의 스터디" },
+];
+
+const meetingOptions = [
+  { value: "ONLINE", label: "온라인" },
+  { value: "OFFLINE", label: "오프라인" },
+  { value: "BOTH", label: "혼합" },
+];
+
+const sidoOptions = [
+  { sidoCd: "11", sidoNm: "서울특별시" },
+  { sidoCd: "26", sidoNm: "부산광역시" },
+  { sidoCd: "27", sidoNm: "대구광역시" },
+  { sidoCd: "28", sidoNm: "인천광역시" },
+  { sidoCd: "29", sidoNm: "광주광역시" },
+  { sidoCd: "30", sidoNm: "대전광역시" },
+  { sidoCd: "31", sidoNm: "울산광역시" },
+  { sidoCd: "36", sidoNm: "세종특별자치시" },
+  { sidoCd: "41", sidoNm: "경기도" },
+  { sidoCd: "43", sidoNm: "충청북도" },
+  { sidoCd: "44", sidoNm: "충청남도" },
+  { sidoCd: "46", sidoNm: "전라남도" },
+  { sidoCd: "47", sidoNm: "경상북도" },
+  { sidoCd: "48", sidoNm: "경상남도" },
+  { sidoCd: "50", sidoNm: "제주특별자치도" },
+  { sidoCd: "51", sidoNm: "강원특별자치도" },
+  { sidoCd: "52", sidoNm: "전북특별자치도" },
+];
+
 export default function Search() {
   const [query, setQuery] = useState("");
-  const [studyData, setStudyData] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-
-  // 기존 select 상태
   const [region, setRegion] = useState("");
   const [studyTopic, setStudyTopic] = useState("");
-
-  // 새로 추가된 체크박스 상태
-  const [studyMethods, setStudyMethods] = useState([]); // 온라인, 오프라인 여러개 선택 가능
-  const [isRecruiting, setIsRecruiting] = useState(false); // 모집 여부
+  const [studyMethods, setStudyMethods] = useState([]);
+  const [isRecruiting, setIsRecruiting] = useState(false);
+  const [studyData, setStudyData] = useState([]);
 
   useEffect(() => {
-    fetch("/studyData.json", { cache: "no-store" })
-      .then((res) => res.json())
-      .then((data) => {
-        setStudyData(data);
-        setFiltered(data);
-      });
-  }, []);
+    fetchFilteredStudies();
+  }, [query, region, studyTopic, studyMethods, isRecruiting]);
 
-  // studyMethods 체크박스 토글 함수
   const toggleStudyMethod = (method) => {
-    if (studyMethods.includes(method)) {
-      setStudyMethods(studyMethods.filter((m) => m !== method));
-    } else {
-      setStudyMethods([...studyMethods, method]);
+    setStudyMethods((prev) =>
+      prev.includes(method) ? prev.filter((m) => m !== method) : [...prev, method]
+    );
+  };
+
+  const fetchFilteredStudies = async () => {
+    try {
+      const base = process.env.NEXT_PUBLIC_API_URL + "/study-groups";
+      const urls = [];
+
+      if (query) urls.push(`${base}/search?keyword=${encodeURIComponent(query)}`);
+      if (studyTopic) urls.push(`${base}/filter/subject?subject=${studyTopic}`);
+      if (region) {
+        const sidoCd = sidoOptions.find((s) => s.sidoNm === region)?.sidoCd;
+        if (sidoCd) urls.push(`${base}/filter/sido?sidoCd=${sidoCd}`);
+      }
+      studyMethods.forEach((method) => {
+        urls.push(`${base}/filter/meeting?meeting=${method}`);
+      });
+      if (isRecruiting) urls.push(`${base}/filter/recruitment?status=RECRUITING`);
+
+      let merged = [];
+
+      if (urls.length === 0) {
+        const res = await fetch(base);
+        const data = await res.json();
+        merged = data.data || [];
+      } else {
+        const results = await Promise.all(urls.map((url) => fetch(url).then((res) => res.json())));
+        merged = results.flatMap((res) => res.data || []);
+      }
+      const unique = [...new Map(merged.map((item) => [item.id, item])).values()];
+      setStudyData(unique);
+    } catch (err) {
+      console.error("스터디 필터 API 오류:", err);
     }
   };
 
-  useEffect(() => {
-    const lower = query.toLowerCase();
-
-    setFiltered(
-      studyData.filter((item) => {
-        // 텍스트 검색
-        const matchesQuery =
-          item.tag.toLowerCase().includes(lower) ||
-          item.content.toLowerCase().includes(lower) ||
-          item.member.role_leader.toLowerCase().includes(lower);
-
-        // 지역 필터
-        const matchesRegion = region ? item.region === region : true;
-
-        // 주제 필터
-        const matchesTopic = studyTopic ? item.topic === studyTopic : true;
-
-        // 스터디 방식 필터 (선택 없으면 모두 허용)
-        // item.study_method가 "온라인" 또는 "오프라인" 등 문자열이라고 가정
-        const matchesMethod =
-          studyMethods.length === 0 || studyMethods.includes(item.study_method);
-
-        // 모집 여부 필터 (false면 무시, true면 모집중인 것만)
-        // item.is_recruiting가 boolean이라고 가정
-        const matchesRecruiting = !isRecruiting || item.is_recruiting === true;
-
-        return (
-          matchesQuery &&
-          matchesRegion &&
-          matchesTopic &&
-          matchesMethod &&
-          matchesRecruiting
-        );
-      })
-    );
-  }, [query, studyData, region, studyTopic, studyMethods, isRecruiting]);
 
   return (
     <div className="w-full h-full flex flex-col bg-white px-24 text-black">
       <Navbar />
       <h1 className="text-2xl font-bold mt-10 mb-6">스터디 검색</h1>
 
-      {/* 검색 input */}
+      {/* 검색창 */}
       <input
         type="text"
         placeholder="스터디 이름, 키워드, 작성자 검색"
@@ -86,9 +110,9 @@ export default function Search() {
         className="border rounded-md px-4 py-2 mb-6 w-full max-w-lg"
       />
 
-      {/* 조건 필터 영역 */}
+      {/* 필터 */}
       <div className="flex flex-wrap gap-6 mb-6 items-center">
-        {/* 지역 select */}
+        {/* 지역 */}
         <label>
           지역:
           <select
@@ -97,51 +121,48 @@ export default function Search() {
             className="ml-2 border rounded px-2 py-1"
           >
             <option value="">전체</option>
-            <option value="서울">서울</option>
-            <option value="대전">대전</option>
-            <option value="부산">부산</option>
+            {sidoOptions.map((s) => (
+              <option key={s.sidoCd} value={s.sidoNm}>
+                {s.sidoNm}
+              </option>
+            ))}
           </select>
         </label>
 
-        {/* 주제 select */}
+        {/* 주제 */}
         <label>
-          스터디 주제:
+          주제:
           <select
             value={studyTopic}
             onChange={(e) => setStudyTopic(e.target.value)}
             className="ml-2 border rounded px-2 py-1"
           >
             <option value="">전체</option>
-            <option value="프로그래밍">프로그래밍</option>
-            <option value="디자인">디자인</option>
-            <option value="마케팅">마케팅</option>
+            {subjectOptions.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
           </select>
         </label>
 
-        {/* 스터디 방식 체크박스 */}
+        {/* 스터디 방식 */}
         <div>
           <span className="mr-2 font-semibold">스터디 방식:</span>
-          <label className="mr-4 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={studyMethods.includes("온라인")}
-              onChange={() => toggleStudyMethod("온라인")}
-              className="mr-1"
-            />
-            온라인
-          </label>
-          <label className="cursor-pointer">
-            <input
-              type="checkbox"
-              checked={studyMethods.includes("오프라인")}
-              onChange={() => toggleStudyMethod("오프라인")}
-              className="mr-1"
-            />
-            오프라인
-          </label>
+          {meetingOptions.map((m) => (
+            <label key={m.value} className="mr-4 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={studyMethods.includes(m.value)}
+                onChange={() => toggleStudyMethod(m.value)}
+                className="mr-1"
+              />
+              {m.label}
+            </label>
+          ))}
         </div>
 
-        {/* 모집 여부 체크박스 */}
+        {/* 모집 여부 */}
         <label className="cursor-pointer ml-6 flex items-center">
           <input
             type="checkbox"
@@ -153,22 +174,22 @@ export default function Search() {
         </label>
       </div>
 
-      {/* 결과 리스트 */}
+      {/* 결과 */}
       <div className="flex flex-wrap gap-x-6 gap-y-6">
-        {filtered.length > 0 ? (
-          filtered.map((item) => (
+        {studyData.length > 0 ? (
+          studyData.map((item) => (
             <StudyCard
               key={item.id}
-              tag={item.tag}
-              content={item.content}
-              leader={item.member.role_leader}
-              like={item.like}
-              detail={item.detail}
+              detail={item.id}
+              tag={item.keywords?.[0] || "스터디"}
+              content={item.title}
+              leader={`ID: ${item.leader?.id}`}
+              like={item.likeCount || 0}
               url={`?tab=intro`}
             />
           ))
         ) : (
-          <p>조건에 맞는 스터디가 없습니다.</p>
+          <p className="text-gray-500">조건에 맞는 스터디가 없습니다.</p>
         )}
       </div>
     </div>
