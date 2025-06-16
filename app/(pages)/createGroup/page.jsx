@@ -132,7 +132,7 @@ export default function CreateGroup() {
 
       if (!res.ok) throw new Error("스터디 생성 실패");
 
-      router.push("/");
+      router.push(`/study-group/${study.id}?tab=manage`);
     } catch (err) {
       console.error("스터디 생성 오류:", err);
       alert("스터디 생성 중 오류가 발생했습니다.");
