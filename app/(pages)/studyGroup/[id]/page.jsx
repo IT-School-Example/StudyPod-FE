@@ -15,7 +15,7 @@ export default function StudyGroup({ params }) {
   const [study, setStudy] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log("params.id:", params.id);
+  console.log("params.id:", params.id); // <-- 이렇게 사용해야 맞습니다
 
   useEffect(() => {
     if (!params?.id) {
@@ -27,7 +27,7 @@ export default function StudyGroup({ params }) {
     const fetchStudyById = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/study-groups/${params.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/study-groups/public/${params.id}`,
           {
             method: "GET",
             credentials: "include",
