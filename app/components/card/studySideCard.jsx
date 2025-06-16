@@ -3,9 +3,9 @@
 import { FaUser, FaUserTie } from "react-icons/fa6";
 import Link from "next/link";
 
-export default function StudySideCard({ tag, detail, isLeader, url }) {
+export default function StudySideCard({ id, tag, detail, isLeader, url }) {
   return (
-    <Link href={`/studyGroup/${detail}${url ?? ""}`}>
+    <Link href={`/studyGroup/${id}${url ?? ""}`}>
       <div className="border rounded-xl p-4 shadow-md bg-white hover:border-blue-300 transition w-full max-w-md">
         <div className="mb-2 flex items-center justify-between">
           <span className="text-sm bg-[#FBEDD7] px-3 py-1 rounded-xl font-medium">
