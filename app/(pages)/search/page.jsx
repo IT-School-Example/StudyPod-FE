@@ -5,17 +5,17 @@ import Navbar from "@/app/components/Navbar";
 import StudyCard from "@/app/components/card/studyCard";
 
 const subjectOptions = [
-  { value: "LANGUAGE", label: "어학 관련 스터디" },
-  { value: "IT", label: "IT 및 프로그래밍 관련 스터디" },
-  { value: "EXAM", label: "자격증 취득 및 시험 준비 스터디" },
-  { value: "JOB", label: "취업 준비 및 경력 개발 스터디" },
-  { value: "SCHOOL", label: "학교 과목 관련 스터디" },
-  { value: "HOBBY", label: "취미 및 자기 계발 스터디" },
-  { value: "CULTURE", label: "문화 및 예술 관련 스터디" },
-  { value: "SCIENCE", label: "과학 관련 스터디" },
-  { value: "HUMANITIES", label: "인문학 관련 스터디" },
-  { value: "BUSINESS", label: "경영 및 경제 관련 스터디" },
-  { value: "ETC", label: "기타 분야의 스터디" },
+  { id: 1, value: "LANGUAGE" },
+  { id: 2, value: "IT" },
+  { id: 3, value: "EXAM" },
+  { id: 4, value: "JOB" },
+  { id: 5, value: "SCHOOL" },
+  { id: 6, value: "HOBBY" },
+  { id: 7, value: "CULTURE" },
+  { id: 8, value: "SCIENCE" },
+  { id: 9, value: "HUMANITIES" },
+  { id: 10, value: "BUSINESS" },
+  { id: 11, value: "ETC" }
 ];
 
 const meetingOptions = [
@@ -130,19 +130,18 @@ export default function Search() {
         </label>
 
         {/* 주제 */}
-        <label>
-          주제:
+        <label className="block mb-1">주제:
           <select
             value={studyTopic}
             onChange={(e) => setStudyTopic(e.target.value)}
             className="ml-2 border rounded px-2 py-1"
           >
-            <option value="">전체</option>
-            {subjectOptions.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
+            <option value="">-- 선택하세요 --</option>
+              {subjectOptions.map(option => (
+                <option key={option.id} value={option.id}>
+                  {option.value}
+                </option>
+              ))}
           </select>
         </label>
 

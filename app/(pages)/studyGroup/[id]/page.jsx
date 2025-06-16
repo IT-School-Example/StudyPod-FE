@@ -1,21 +1,20 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Navbar from "@/app/components/Navbar";
-import StudyIntro from "../components/studyIntro";
-import StudyMembers from "../components/studyMembers";
-import Enrollment from "../components/enrollment";
-import Manage from "../components/manage";
+import StudyIntro from "@/app/(pages)/studyGroup/components/studyIntro";
+import StudyMembers from "@/app/(pages)/studyGroup/components/studyMembers";
+import Enrollment from "@/app/(pages)/studyGroup/components/enrollment";
+import Manage from "@/app/(pages)/studyGroup/components/manage";
 
-export default function StudyGroup({ params }) {
+export default function StudyGroup() {
+  const params = useParams();
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") || "intro";
 
   const [study, setStudy] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  console.log("params.id:", params.id);
 
   useEffect(() => {
     if (!params?.id) {
@@ -27,7 +26,7 @@ export default function StudyGroup({ params }) {
     const fetchStudyById = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/study-groups/${params.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/study-groups/public/${params.id}`,
           {
             method: "GET",
             credentials: "include",
