@@ -10,38 +10,126 @@ export default function Home() {
   const [offset, setOffset] = useState({ y: 0 });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [studyData, setStudyData] = useState([]);
-  const [name, setName] = useState("");
+  const [userId, setUserId] = useState(null);
+  const [myStudies, setMyStudies] = useState([]);
+  const [leaderStudies, setLeaderStudies] = useState([]);
 
   useEffect(() => {
-    const status = localStorage.getItem("isLoggedIn") === "true";
-    setIsLoggedIn(status);
+    const user = localStorage.getItem("currentUser");
+    setIsLoggedIn(!!user);
 
-    const currentEmail = localStorage.getItem("currentUser");
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find((u) => u.email === currentEmail);
-    if (user) setName(user.name);
-    
-    const fetchStudyGroups = async () => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("유저 정보 불러오기 실패");
+        const data = await res.json();
+        setUserId(data.id);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const fetchAll = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include'
-        }); 
-        if (!res.ok) throw new Error("1. Failed to fetch study groups");
-        const data = await res.json();
-        if (!data) console.log(2-1);
-        console.log(2-2, data);
-        setStudyData(data.data || []);
-      } catch (error) {
-        console.error("3. Error fetching study groups:", error);
+          method: "GET",
+          credentials: "include",
+        });
+        const json = await res.json();
+        setStudyData(json.data || []);
+      } catch (err) {
+        console.error("전체 스터디 조회 실패:", err);
       }
-    }
+    };
 
-    fetchStudyGroups();
+    fetchUser();
+    fetchAll();
   }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchMy = async () => {
+      try {
+        // 사용자 정보 조회
+        const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!userRes.ok) throw new Error("회원 정보를 불러올 수 없습니다.");
+
+        const user = await userRes.json();
+        setUserId(user.id);
+
+        // 두 API 병렬 호출
+        const [leaderRes, memberRes] = await Promise.allSettled([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/leader/${user.id}`, {
+            method: "GET",
+            credentials: "include",
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/my`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ userId: user.id }),
+          }),
+        ]);
+
+        const leaderData =
+          leaderRes.status === "fulfilled" && leaderRes.value.ok
+            ? (await leaderRes.value.json()).data || []
+            : [];
+
+        const memberData =
+          memberRes.status === "fulfilled" && memberRes.value.ok
+            ? (await memberRes.value.json()).data || []
+            : [];
+
+        // 중복 제거
+        const combined = [...leaderData, ...memberData].filter(
+          (study, index, self) => index === self.findIndex((s) => s.id === study.id)
+        );
+        
+        console.log(combined)
+        setMyStudies(combined);
+      } catch (err) {
+        console.error("스터디 데이터 조회 실패:", err);
+        alert("로그인이 필요합니다.");
+        router.push("/login");
+      }
+    };
+
+    const fetchLeader = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/study-groups/leader/${userId}`,
+          { method: "GET", credentials: "include" }
+        );
+        const json = await res.json();
+        console.log(json.data)
+        setLeaderStudies(json.data || []);
+      } catch (err) {
+        console.warn("리더 스터디 조회 실패:", err);
+      }
+    };
+
+    fetchMy();
+    fetchLeader();
+  }, [userId]);
+
+  // 🔹 전체 목록에서 필터링
+  const leaderGroupsByFilter = studyData.filter((item) => item.leader?.id === userId);
+  const memberGroupsByFilter = studyData.filter((item) =>
+    item.members?.some((m) => m.id === userId)
+  );
+
+  // 🔹 추천 그룹: 전체 목록 - 내가 속한 스터디 id 빼기
+  const myIds = new Set([...myStudies, ...leaderStudies].map((s) => s.id));
+  const recommendedGroups = studyData.filter((s) => !myIds.has(s.id));
 
   const handleMouseMove = (e) => {
     const { top, height } = e.currentTarget.getBoundingClientRect();
@@ -49,20 +137,6 @@ export default function Home() {
     setOffset({ y });
   };
 
-  // 그룹 필터링 (리더, 소속, 추천 그룹)
-  const leaderGroups = studyData.filter((item) =>
-    item.member?.role_leader?.includes(name)
-  );
-  const memberGroups = studyData.filter(
-    (item) =>
-      item.member?.role_member?.includes(name) ||
-      item.member?.role_leader?.includes(name)
-  );
-  const recommendedGroups = studyData.filter(
-    (item) =>
-      !item.member?.role_member?.includes(name) &&
-      !item.member?.role_leader?.includes(name)
-  );
   return (
     <div className="w-full h-full flex flex-col bg-white px-24">
       <Navbar />
@@ -89,95 +163,74 @@ export default function Home() {
         </div>
       </div>
 
-      {isLoggedIn ? (
+      {isLoggedIn && (
         <>
-          {leaderGroups?.length > 0 && (
-            <div className="flex flex-col space-y-5 py-10">
+          {leaderStudies.length > 0 && (
+            <section className="py-10">
               <div className="flex justify-between items-center">
                 <h1 className="font-bold text-2xl text-black">관리 스터디</h1>
-                <Link href="/mypage/manage">
-                  <span className="text-sm text-gray-500 ml-2">전체 보기</span>
+                <Link href="/mypage/manage" className="text-sm text-gray-500">
+                  전체 보기
                 </Link>
               </div>
-              <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
-                {leaderGroups.map((item) => (
+              <div className="flex flex-wrap gap-6 mt-5">
+                {leaderStudies.map((item) => (
                   <StudyCard
                     key={item.id}
                     detail={item.id}
-                    tag={item.keywords[0]}  // 첫 번째 키워드 사용
+                    tag={item.keywords?.[0]}
                     content={item.title}
-                    leader={`ID: ${item.leader.id}`}  // 또는 제거해도 됨
+                    leader={`ID: ${item.leader?.id}`}
                     like={4}
-                    url={`?tab=manage`}  // 관리 그룹으로 이동
+                    url="?tab=manage"
                   />
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
-          {memberGroups?.length > 0 && (
-            <div className="flex flex-col space-y-5 py-10">
+          {myStudies.length > 0 && (
+            <section className="py-10">
               <div className="flex justify-between items-center">
                 <h1 className="font-bold text-2xl text-black">소속 스터디</h1>
-                <Link href="/mypage/belong">
-                  <span className="text-sm text-gray-500 ml-2">전체 보기</span>
+                <Link href="/mypage/belong" className="text-sm text-gray-500">
+                  전체 보기
                 </Link>
               </div>
-              <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
-                {memberGroups.map((item) => (
+              <div className="flex flex-wrap gap-6 mt-5">
+                {myStudies.map((item) => (
                   <StudyCard
                     key={item.id}
                     detail={item.id}
-                    tag={item.keywords[0]}  // 첫 번째 키워드 사용
+                    tag={item.keywords?.[0]}
                     content={item.title}
-                    leader={`ID: ${item.leader.id}`}  // 또는 제거해도 됨
+                    leader={`ID: ${item.leader?.id}`}
                     like={4}
-                    url={`?tab=members`}
+                    url="?tab=members"
                   />
                 ))}
               </div>
-            </div>
+            </section>
           )}
-
-          <div className="flex flex-col space-y-5 py-10">
-            <h1 className="font-bold text-4xl text-black text-start">
-              추천 스터디 그룹
-            </h1>
-            <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
-              {recommendedGroups.map((item) => (
-                <StudyCard
-                  key={item.id}
-                  detail={item.id}
-                  tag={item.keywords[0]}  // 첫 번째 키워드 사용
-                  content={item.title}
-                  leader={`ID: ${item.leader.id}`}  // 또는 제거해도 됨
-                  like={4}
-                  url={`?tab=intro`}
-                />
-              ))}
-            </div>
-          </div>
         </>
-      ) : (
-        <div className="flex flex-col space-y-5 py-10">
-          <h1 className="font-bold text-4xl text-black text-start">
-            추천 스터디 그룹
-          </h1>
-          <div className="w-full flex flex-wrap gap-x-6 gap-y-6">
-            {studyData.map((item) => (
-              <StudyCard
-                key={item.id}
-                detail={item.id}
-                tag={item.keywords[0]}  // 첫 번째 키워드 사용
-                content={item.title}
-                leader={`ID: ${item.leader.id}`}  // 또는 제거해도 됨
-                like={4}
-                url={`?tab=intro`}
-              />
-            ))}
-          </div>
-        </div>
       )}
+
+      <section className="py-10">
+        <h1 className="font-bold text-4xl text-black">추천 스터디 그룹</h1>
+        <div className="flex flex-wrap gap-6 mt-5">
+          {recommendedGroups.map((item) => (
+            <StudyCard
+              key={item.id}
+              detail={item.id}
+              tag={item.keywords?.[0]}
+              content={item.title}
+              leader={`ID: ${item.leader?.id}`}
+              like={4}
+              url="?tab=intro"
+            />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

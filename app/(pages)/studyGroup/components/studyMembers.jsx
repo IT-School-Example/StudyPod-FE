@@ -1,16 +1,12 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import ViewBoard from "@/app/components/viewBoard";
 import PostBoard from "@/app/components/postBoard";
 
 export default function StudyMembers({ study }) {
-  const currentEmail = localStorage.getItem("currentUser");
-  const users = JSON.parse(localStorage.getItem("users")) || [];
-  const user = users.find((u) => u.email === currentEmail);
-  const name = user?.name;
-
-  const isAuthorized =
-    study?.member?.role_leader?.includes(name) ||
-    study?.member?.role_member?.includes(name);
+  const [userId, setUserId] = useState(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   const [tab, setTab] = useState("info");
   const [showPostForm, setShowPostForm] = useState(false);
@@ -18,6 +14,30 @@ export default function StudyMembers({ study }) {
 
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("인증된 사용자 정보 불러오기 실패");
+        const data = await res.json();
+        setUserId(data.id);
+
+        // 권한 확인
+        const isLeader = study.leader?.id === data.id;
+        const isMember = study.members?.some((m) => m.id === data.id);
+        setIsAuthorized(isLeader || isMember);
+      } catch (err) {
+        console.error("인증 오류:", err);
+        setIsAuthorized(false);
+      }
+    };
+
+    fetchUser();
+  }, [study]);
 
   useEffect(() => {
     fetch("/studyBoardData.json")
@@ -47,11 +67,10 @@ export default function StudyMembers({ study }) {
   };
 
   const handleTabChange = (key) => {
-  setTab(key);
-  setShowPostForm(false);
-  setSelectedPost(null);
-};
-
+    setTab(key);
+    setShowPostForm(false);
+    setSelectedPost(null);
+  };
 
   if (!isAuthorized) {
     return <p className="text-red-500">접근 권한이 없습니다.</p>;
@@ -68,9 +87,7 @@ export default function StudyMembers({ study }) {
           return (
             <button
               key={key}
-              onClick={() => {
-                handleTabChange(key)
-              }}
+              onClick={() => handleTabChange(key)}
               className={`px-4 py-2 rounded-md font-semibold transition ${
                 isActive
                   ? "bg-[#4B2E1E] text-white shadow-md"
@@ -95,7 +112,7 @@ export default function StudyMembers({ study }) {
         </div>
       )}
 
-      {(tab === "notice" && (
+      {tab === "notice" && (
         <div className="bg-white p-4 rounded">
           {showPostForm ? (
             <PostBoard
@@ -107,9 +124,7 @@ export default function StudyMembers({ study }) {
           ) : (
             <>
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">
-                  📢 공지사항
-                </h3>
+                <h3 className="text-lg font-semibold">📢 공지사항</h3>
               </div>
               <ViewBoard
                 posts={posts.filter((p) => p.category === tab)}
@@ -120,9 +135,9 @@ export default function StudyMembers({ study }) {
             </>
           )}
         </div>
-      ))}
+      )}
 
-      {( tab === "free") && (
+      {tab === "free" && (
         <div className="bg-white p-4 rounded">
           {showPostForm ? (
             <PostBoard
@@ -134,15 +149,13 @@ export default function StudyMembers({ study }) {
           ) : (
             <>
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">
-                  💬 자유게시판
-                </h3>
-                  <button
-                    onClick={() => handleShowPost(tab)}
-                    className="px-3 py-1 bg-[#4B2E1E] text-white text-sm rounded hover:bg-[#3a2117]"
-                  >
-                    글 작성하기
-                  </button>
+                <h3 className="text-lg font-semibold">💬 자유게시판</h3>
+                <button
+                  onClick={() => handleShowPost(tab)}
+                  className="px-3 py-1 bg-[#4B2E1E] text-white text-sm rounded hover:bg-[#3a2117]"
+                >
+                  글 작성하기
+                </button>
               </div>
               <ViewBoard
                 posts={posts.filter((p) => p.category === tab)}
