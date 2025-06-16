@@ -48,7 +48,7 @@ export default function StudyIntro({ study }) {
       {/* 제목 + 신청 */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">{study.title}</h1>
-        <Link href={`/study-group/${study.id}?tab=enrollment`}>
+        <Link href={`/studyGroup/${study.id}?tab=enrollment`}>
           <button className="py-3 px-6 rounded-md bg-[#4B2E1E] text-white font-semibold">
             스터디 신청하기
           </button>
