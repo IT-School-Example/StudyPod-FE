@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const categoryMap = {
   free: "자유",
@@ -11,24 +11,72 @@ export default function PostBoard({ onPostSubmit, studyDetail }) {
     content: "",
     category: "free",
   });
+  const [userId, setUserId] = useState(null);
 
-  const handleSubmit = () => {
-    if (!form.title.trim() || !form.content.trim()) return;
+  // 사용자 정보 불러오기
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+          method: "GET",
+          credentials: "include",
+        });
 
-    const newPost = {
-      board_id: Date.now(),
-      category: form.category,
-      title: form.title,
-      content: form.content,
-      study_group_detail: studyDetail,
-      user_id: localStorage.getItem("currentUser") || "anonymous",
-      views: 0,
-      date: new Date().toISOString().slice(0, 10),
-      comments: [],
+        if (!res.ok) throw new Error("사용자 정보 조회 실패");
+
+        const data = await res.json();
+        setUserId(data.id);
+      } catch (err) {
+        console.error("유저 정보 가져오기 실패:", err);
+        alert("로그인이 필요합니다.");
+      }
     };
 
-    onPostSubmit(newPost);
-    setForm({ title: "", content: "", category: "free" });
+    fetchUser();
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!form.title.trim() || !form.content.trim()) return;
+    if (!userId) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    const body = {
+      data: {
+        title: form.title,
+        content: form.content,
+        studyBoardCategory: "FREE", // 서버는 대문자 FREE 요구
+        user: { id: userId },
+        studyGroup: { id: studyDetail },
+      },
+    };
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-boards`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error("게시글 등록 실패");
+
+      const response = await res.json();
+      alert("게시글이 성공적으로 등록되었습니다.");
+
+      // 등록한 글을 부모에 전달
+      onPostSubmit(response.data);
+
+      // 폼 초기화
+      setForm({ title: "", content: "", category: "free" });
+    } catch (err) {
+      console.error(err);
+      alert("게시글 등록 중 오류가 발생했습니다.");
+    }
   };
 
   return (
