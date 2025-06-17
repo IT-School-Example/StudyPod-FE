@@ -13,13 +13,30 @@ export default function StudyCard({
   initiallyLiked = false,
 }) {
   const [liked, setLiked] = useState(initiallyLiked);
-  const [interestedId, setInterestedId] = useState(null); // 관심 등록 ID 추적용
+  const [interestedId, setInterestedId] = useState(null);
+  const [leaderName, setLeaderName] = useState("로딩 중...");
 
   useEffect(() => {
-    // 처음 마운트 시 관심 등록 ID 가져오기
-    const fetchInterestedId = async () => {
-      if (!initiallyLiked) return;
+    const fetchDisplayName = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${leader}/summary`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        setLeaderName(data.data.displayName);
+      } catch (err) {
+        console.error("리더 이름 조회 실패:", err);
+        setLeaderName("알 수 없음");
+      }
+    };
 
+    if (leader) fetchDisplayName();
+  }, [leader]);
+
+  useEffect(() => {
+    if (!initiallyLiked) return;
+
+    const fetchInterestedId = async () => {
       try {
         const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
           method: "GET",
@@ -29,7 +46,6 @@ export default function StudyCard({
         if (!userRes.ok) return;
         const user = await userRes.json();
 
-        // 관심 목록 조회
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/interested-studies/user/${user.id}`,
           {
@@ -72,7 +88,6 @@ export default function StudyCard({
       const userId = user.id;
 
       if (!liked) {
-        // 관심 등록
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/interested-studies`, {
           method: "POST",
           headers: {
@@ -97,7 +112,6 @@ export default function StudyCard({
         setInterestedId(result.data.id);
         setLiked(true);
       } else {
-        // 관심 해제
         if (!interestedId) {
           alert("관심 항목 ID를 찾을 수 없습니다.");
           return;
@@ -137,7 +151,7 @@ export default function StudyCard({
         <div>
           <div className="bg-black h-0.5 mb-2" />
           <div className="flex flex-row justify-between text-black font-bold">
-            <h1 className="py-2">{leader}</h1>
+            <h1 className="py-2">{leaderName}</h1>
             <button
               onClick={handleLike}
               className="flex flex-row items-center space-x-1 justify-center bg-gray-300 px-4 py-2 rounded-xl hover:bg-pink-200"
