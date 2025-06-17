@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FaHeart } from "react-icons/fa6";
 
-export default function LikeSideCard({ tag, content, leader, like, detail, url }) {
+export default function LikeSideCard({ tag, content, leader, detail, url }) {
   return (
     <Link href={`/studyGroup/${detail}${url ?? ""}`}>
       <div className="p-4 w-full border-2 border-black rounded-xl hover:border-blue-300 hover:scale-105 transition">
@@ -17,7 +17,6 @@ export default function LikeSideCard({ tag, content, leader, like, detail, url }
           <span>리더: {leader}</span>
           <span className="flex items-center gap-1">
             <FaHeart className="text-red-500" />
-            {like}
           </span>
         </div>
       </div>
