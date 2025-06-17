@@ -1,42 +1,68 @@
+"use client";
+
 import { useState, useEffect } from "react";
 
 export default function Notice({ study }) {
-  const [name, setName] = useState("");
+  const [userId, setUserId] = useState(null);
   const [form, setForm] = useState({
     title: "",
     content: "",
   });
 
-
+  // 로그인한 유저 정보 가져오기
   useEffect(() => {
-      const currentEmail = localStorage.getItem("currentUser");
-      const users = JSON.parse(localStorage.getItem("users")) || [];
-      const user = users.find((u) => u.email === currentEmail);
-      if (user) setName(user.name);
-    }, []);
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+          method: "GET",
+          credentials: "include",
+        });
 
+        if (!res.ok) throw new Error("사용자 정보 조회 실패");
+
+        const data = await res.json();
+        setUserId(data.id);
+      } catch (error) {
+        console.error("유저 정보 조회 에러:", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  // 입력값 처리
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  // 게시글 작성 요청
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!userId) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
     const newPost = {
-      category: "notice", // 고정
-      title: form.title,
-      content: form.content,
-      study_group_detail: study.detail,
-      user_id: name,
+      data: {
+        title: form.title,
+        content: form.content,
+        studyBoardCategory: "NOTICE",
+        user: { id: userId },
+        studyGroup: { id: study.id },
+      },
     };
 
     try {
-      const res = await fetch("/api/postBoard", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-boards`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          accept: "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(newPost),
       });
 
@@ -45,7 +71,7 @@ export default function Notice({ study }) {
       alert("게시글이 성공적으로 저장되었습니다!");
       setForm({ title: "", content: "" });
     } catch (err) {
-      console.error(err);
+      console.error("게시글 저장 중 오류:", err);
       alert("오류가 발생했습니다.");
     }
   };
@@ -82,6 +108,7 @@ export default function Notice({ study }) {
         <button
           type="submit"
           className="bg-[#4B2E1E] text-white px-6 py-3 rounded font-semibold"
+          disabled={!userId}
         >
           등록하기
         </button>
