@@ -1,55 +1,60 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import IntroSideCard from "@/app/components/card/introSideCard";
 
 export default function Applied() {
+  const [userId, setUserId] = useState(null);
   const [appliedStudies, setAppliedStudies] = useState([]);
-  const [studyData, setStudyData] = useState([]);
-  const [userName, setUserName] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
-    const currentEmail = localStorage.getItem("currentUser");
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find((u) => u.email === currentEmail);
-    if (user) setUserName(user.name);
-
-    const fetchData = async () => {
+    const fetchAppliedStudies = async () => {
       try {
-        const joinRes = await fetch("/joinMemberList.json");
-        const joinData = await joinRes.json();
+        // 로그인 유저 정보 조회
+        const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+          method: "GET",
+          credentials: "include",
+        });
 
-        const studyRes = await fetch("/studyData.json");
-        const studyList = await studyRes.json();
-        setStudyData(studyList);
+        if (!userRes.ok) throw new Error("회원 정보를 불러올 수 없습니다.");
 
-        const filtered = joinData.filter(
-          (item) => item.user === user?.name && item.status === "pending"
+        const user = await userRes.json();
+        setUserId(user.id);
+
+        // 신청한 스터디 목록 조회 (PENDING 상태)
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/study-groups/user/${user.id}/enrolled-groups?enrollmentStatus=PENDING`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
         );
 
-        setAppliedStudies(filtered);
-      } catch (error) {
-        console.error("데이터 로딩 오류:", error);
+        if (!res.ok) throw new Error("신청한 스터디를 불러올 수 없습니다.");
+
+        const json = await res.json();
+        setAppliedStudies(json.data || []);
+      } catch (err) {
+        console.error("데이터 조회 오류:", err);
+        alert("로그인이 필요합니다.");
+        router.push("/login");
       }
     };
 
-    fetchData();
-  }, []);
-
-  const getStudyTitle = (detailId) => {
-    const study = studyData.find((s) => s.detail === detailId);
-    return study ? study.tag : "알 수 없는 스터디";
-  };
-
+    fetchAppliedStudies();
+  }, [router]);
+  
   return (
     <div className="w-full space-y-4">
       <h1 className="text-2xl font-bold text-black mb-6">신청한 스터디 목록</h1>
       {appliedStudies.length > 0 ? (
-        appliedStudies.map((item) => (
+        appliedStudies.map((study) => (
           <IntroSideCard
-            key={item.id}
-            studyTitle={getStudyTitle(item.studyDetail)}
-            introduce={item.introduce}
+            key={study.id}
+            studyTitle={study.title}
+            introduce={study.description}
           />
         ))
       ) : (
