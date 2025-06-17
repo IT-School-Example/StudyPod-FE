@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const categoryMap = {
   NOTICE: "공지",
@@ -10,6 +10,24 @@ const categoryMap = {
 export default function ViewBoard({ posts, setPosts }) {
   const [commentInputs, setCommentInputs] = useState({});
   const [selectedPost, setSelectedPost] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("유저 정보 조회 실패");
+        const data = await res.json();
+        setCurrentUserId(data.id);
+      } catch (err) {
+        console.error("유저 ID 가져오기 실패:", err);
+      }
+    };
+    fetchUserId();
+  }, []);
 
   const handleCommentChange = (postId, value) => {
     setCommentInputs((prev) => ({ ...prev, [postId]: value }));
@@ -32,7 +50,7 @@ export default function ViewBoard({ posts, setPosts }) {
 
   const handlePostClick = async (post) => {
     let comments = [];
-    if (post.category === "free") {
+    if (post.studyBoardCategory === "FREE") {
       comments = await fetchComments(post.id);
     }
     setSelectedPost({ ...post, comments });
@@ -40,7 +58,7 @@ export default function ViewBoard({ posts, setPosts }) {
 
   const handleCommentSubmit = async (postId) => {
     const comment = commentInputs[postId]?.trim();
-    if (!comment) return;
+    if (!comment || !currentUserId) return;
 
     try {
       const res = await fetch(
@@ -53,9 +71,9 @@ export default function ViewBoard({ posts, setPosts }) {
             Accept: "application/json",
           },
           body: JSON.stringify({
-            data: {
-              content: comment,
-            },
+            content: comment,
+            studyBoard: { id: postId },
+            user: { id: currentUserId },
           }),
         }
       );
@@ -89,7 +107,7 @@ export default function ViewBoard({ posts, setPosts }) {
 
         <div className="p-4 border rounded bg-white shadow-sm">
           <h3 className="font-bold text-xl mb-2">
-            [{categoryMap[post.category] || post.category}] {post.title}
+            [{categoryMap[post.studyBoardCategory] || post.studyBoardCategory}] {post.title}
           </h3>
           <div className="text-sm text-gray-600 mb-1">
             {post.date} | 작성자: {post.user_id}
@@ -98,18 +116,18 @@ export default function ViewBoard({ posts, setPosts }) {
           <p className="whitespace-pre-wrap mb-4">{post.content}</p>
         </div>
 
-        <div className="mt-6 p-4 border rounded bg-white shadow-sm">
-          <h4 className="font-semibold mb-3">💬 댓글</h4>
-          <div className="space-y-3">
-            {post.comments?.map((c, index) => (
-              <div key={c.id} className="p-3 bg-gray-50 rounded shadow-sm border">
-                <p className="text-sm font-semibold text-gray-700">익명 {index + 1}</p>
-                <p className="text-sm text-gray-600">{c.content}</p>
-              </div>
-            ))}
-          </div>
+        {post.studyBoardCategory === "FREE" && (
+          <div className="mt-6 p-4 border rounded bg-white shadow-sm">
+            <h4 className="font-semibold mb-3">💬 댓글</h4>
+            <div className="space-y-3">
+              {post.comments?.map((c, index) => (
+                <div key={c.id} className="p-3 bg-gray-50 rounded shadow-sm border">
+                  <p className="text-sm font-semibold text-gray-700">익명 {index + 1}</p>
+                  <p className="text-sm text-gray-600">{c.content}</p>
+                </div>
+              ))}
+            </div>
 
-          {post.category === "FREE" ? (
             <div className="mt-4 flex gap-2 items-center">
               <input
                 type="text"
@@ -125,10 +143,8 @@ export default function ViewBoard({ posts, setPosts }) {
                 등록
               </button>
             </div>
-          ) : (
-            <p className="text-xs text-gray-400">이 게시글에는 댓글을 작성할 수 없습니다.</p>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -142,7 +158,7 @@ export default function ViewBoard({ posts, setPosts }) {
           className="p-4 border rounded shadow-sm hover:bg-gray-50 cursor-pointer"
         >
           <div className="text-sm text-gray-600 mb-1">
-            [{categoryMap[post.category] || post.category}] {post.date} | 작성자: {post.user_id}
+            [{categoryMap[post.studyBoardCategory] || post.studyBoardCategory}] {post.date} | 작성자: {post.user_id}
           </div>
           <h3 className="font-bold text-lg mb-1">{post.title}</h3>
         </div>
