@@ -2,8 +2,8 @@
 import { useState, useEffect } from "react";
 
 const categoryMap = {
-  notice: "공지",
-  free: "자유"
+  NOTICE: "공지",
+  FREE: "자유",
 };
 
 export default function Board({ study }) {
@@ -11,31 +11,52 @@ export default function Board({ study }) {
   const [selectedPost, setSelectedPost] = useState(null);
 
   useEffect(() => {
-    fetch("/studyBoardData.json")
-      .then((res) => res.json())
-      .then((data) => {
-        const filtered = data.filter(
-          (post) => post.study_group_detail === study.detail
+    const fetchPosts = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/study-boards/study-groups/${study.id}`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
         );
-        setPosts(filtered);
-      });
-  }, [study.detail]);
 
-  const handleOpenModal = (post) => {
-    setSelectedPost(post);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedPost(null);
-  };
-
-  const handleDelete = (id) => {
-    if (confirm("정말 삭제하시겠습니까?")) {
-      const updated = posts.filter((post) => post.board_id !== id);
-      setPosts(updated);
-      if (selectedPost?.board_id === id) {
-        handleCloseModal();
+        if (!res.ok) throw new Error("게시글 목록 조회 실패");
+        const data = await res.json();
+        setPosts(data.data);
+      } catch (err) {
+        console.error("게시글 조회 오류:", err);
       }
+    };
+
+    if (study?.id) fetchPosts();
+  }, [study.id]);
+
+  const handleOpenModal = (post) => setSelectedPost(post);
+  const handleCloseModal = () => setSelectedPost(null);
+
+  const handleDelete = async (id) => {
+    if (!confirm("정말 삭제하시겠습니까?")) return;
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/study-boards/${id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) throw new Error("삭제 요청 실패");
+
+      // 삭제 성공 시 프론트 상태에서도 제거
+      const updated = posts.filter((post) => post.id !== id);
+      setPosts(updated);
+      if (selectedPost?.id === id) handleCloseModal();
+      alert("게시글이 삭제되었습니다.");
+    } catch (err) {
+      console.error("삭제 오류:", err);
+      alert("삭제에 실패했습니다.");
     }
   };
 
@@ -54,10 +75,10 @@ export default function Board({ study }) {
         </thead>
         <tbody>
           {posts.map((post) => (
-            <tr key={post.board_id} className="hover:bg-gray-100 border-b text-center">
-              <td className="p-2">{post.board_id}</td>
-              <td className="p-2">{categoryMap[post.category] || post.category}</td>
-              <td className="p-2">{post.date}</td>
+            <tr key={post.id} className="hover:bg-gray-100 border-b text-center">
+              <td className="p-2">{post.id}</td>
+              <td className="p-2">{categoryMap[post.studyBoardCategory] || post.studyBoardCategory}</td>
+              <td className="p-2">{post.createdAt?.split("T")[0]}</td>
               <td className="p-2 text-left">
                 <button
                   onClick={() => handleOpenModal(post)}
@@ -66,10 +87,10 @@ export default function Board({ study }) {
                   {post.title}
                 </button>
               </td>
-              <td className="p-2">{post.views}</td>
+              <td className="p-2">{post.viewCount ?? 0}</td>
               <td className="p-2">
                 <button
-                  onClick={() => handleDelete(post.board_id)}
+                  onClick={() => handleDelete(post.id)}
                   className="text-red-500 hover:underline"
                 >
                   삭제
@@ -92,7 +113,10 @@ export default function Board({ study }) {
           >
             <h2 className="text-xl font-bold mb-1">{selectedPost.title}</h2>
             <div className="mb-4 text-sm text-gray-600">
-              분류: <span className="font-semibold">{categoryMap[selectedPost.category] || selectedPost.category}</span>
+              분류:{" "}
+              <span className="font-semibold">
+                {categoryMap[selectedPost.studyBoardCategory] || selectedPost.studyBoardCategory}
+              </span>
             </div>
 
             <p className="mb-4 whitespace-pre-wrap">{selectedPost.content}</p>
@@ -102,7 +126,7 @@ export default function Board({ study }) {
               <ul className="list-disc pl-5 space-y-1">
                 {selectedPost.comments?.map((c) => (
                   <li key={c.id}>{c.content}</li>
-                ))}
+                )) ?? <li>댓글이 없습니다.</li>}
               </ul>
             </div>
 
