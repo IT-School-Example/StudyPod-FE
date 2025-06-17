@@ -7,49 +7,65 @@ import { useRouter } from "next/navigation";
 export default function Like() {
   const [likedStudies, setLikedStudies] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [name, setName] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    const currentEmail = localStorage.getItem("currentUser");
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find((u) => u.email === currentEmail);
-    if (user) setName(user.name);
-
-    if (!user) {
-      alert("로그인이 필요합니다.");
-      router.push("/");
-      return;
-    }
-
-    const fetchData = async () => {
+    const fetchLikedStudies = async () => {
       try {
-        const likeRes = await fetch("/studyLikes.json");
-        const likeData = await likeRes.json();
+        // 1. 유저 정보 조회
+        const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+          method: "GET",
+          credentials: "include",
+        });
 
-        const studyRes = await fetch("/studyData.json");
-        const studyList = await studyRes.json();
+        if (!userRes.ok) {
+          alert("로그인이 필요합니다.");
+          router.push("/");
+          return;
+        }
 
-        // 현재 유저가 좋아요 누른 studyDetail 목록 추출
-        const likedIds = likeData.filter(
-            (item) => item.likedUsers?.filter(Boolean).includes(user.name)
-          )
-          .map((item) => item.studyDetail);
+        const user = await userRes.json();
 
-        // studyData에서 likedIds에 해당하는 것만 필터링
-        const likedList = studyList.filter((study) =>
-          likedIds.includes(study.detail)
+        // 2. 관심 스터디 목록 조회
+        const likedRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/interested-studies/user/${user.id}`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
         );
 
-        setLikedStudies(likedList);
+        if (!likedRes.ok) throw new Error("관심 스터디 조회 실패");
+
+        const likedData = await likedRes.json();
+        const studyIds = likedData.data.map((item) => item.studyGroup.id);
+
+        // 3. 각 스터디 ID로 상세 조회 API 호출
+        const studyDetails = await Promise.all(
+          studyIds.map(async (id) => {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/public/${id}`, {
+              method: "GET",
+              credentials: "include",
+            });
+
+            if (!res.ok) return null;
+
+            const data = await res.json();
+            return data.data; // 스터디 상세 객체
+          })
+        );
+
+        // 4. null 값 제거
+        const validStudies = studyDetails.filter(Boolean);
+        setLikedStudies(validStudies);
       } catch (error) {
-        console.error("데이터 불러오기 오류:", error);
+        console.error("스터디 조회 오류:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchLikedStudies();
   }, [router]);
 
   if (loading) return <div>Loading...</div>;
@@ -64,11 +80,10 @@ export default function Like() {
           {likedStudies.map((study) => (
             <LikeSideCard
               key={study.id}
-              tag={study.tag}
-              content={study.content}
-              leader={study.leader}
-              like={study.like}
-              detail={study.detail}
+              tag={study.keywords?.[0] ?? "태그"}
+              content={study.title}
+              leader={study.leader?.id ?? "리더"}
+              detail={study.id}
               url={`?tab=intro`}
             />
           ))}
