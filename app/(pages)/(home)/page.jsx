@@ -185,7 +185,7 @@ export default function Home() {
                     detail={item.id}
                     tag={item.keywords?.[0]}
                     content={item.title}
-                    leader={`ID: ${item.leader?.id}`}
+                    leader={item.leader?.id}
                     initiallyLiked={interestedStudyIds.includes(item.id)}
                     url="?tab=manage"
                   />
@@ -209,7 +209,7 @@ export default function Home() {
                     detail={item.id}
                     tag={item.keywords?.[0]}
                     content={item.title}
-                    leader={`ID: ${item.leader?.id}`}
+                    leader={item.leader?.id}
                     initiallyLiked={interestedStudyIds.includes(item.id)}
                     url="?tab=members"
                   />
@@ -229,7 +229,7 @@ export default function Home() {
               detail={item.id}
               tag={item.keywords?.[0]}
               content={item.title}
-              leader={`ID: ${item.leader?.id}`}
+              leader={item.leader?.id}
               initiallyLiked={interestedStudyIds.includes(item.id)}
               url="?tab=intro"
             />
