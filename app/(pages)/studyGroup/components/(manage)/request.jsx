@@ -3,27 +3,73 @@ import { useEffect, useState } from "react";
 
 export default function Request({ study }) {
   const [requests, setRequests] = useState([]);
-
-  const filteredRequests = Array.isArray(requests)
-    ? requests.filter((r) => r.studyDetail === study.detail)
-    : [];
+  const [userNames, setUserNames] = useState({}); // { userId: displayName }
 
   useEffect(() => {
-    fetch("/joinMemberList.json")
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) setRequests(data);
-        else setRequests([]);
-      });
-  }, []);
+    if (!study?.id) return;
 
-  const updateStatus = async (id, user, studyDetail, status) => {
+    const fetchRequests = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/study-groups/${study.id}/enrollments?status=PENDING`,
+          { method: "GET", credentials: "include" }
+        );
+        const result = await res.json();
+        if (result.resultCode === "OK") {
+          setRequests(result.data);
+          fetchUserNames(result.data.map((r) => r.user.id));
+        } else {
+          setRequests([]);
+        }
+      } catch (error) {
+        console.error("신청자 목록 로딩 실패:", error);
+        setRequests([]);
+      }
+    };
+
+    fetchRequests();
+  }, [study?.id]);
+
+  const fetchUserNames = async (userIds) => {
+    const uniqueIds = [...new Set(userIds)];
+    const nameMap = {};
+
+    await Promise.all(
+      uniqueIds.map(async (id) => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${id}/summary`, {
+            credentials: "include",
+          });
+          const result = await res.json();
+          nameMap[id] = result.data?.displayName || "알 수 없음";
+        } catch (e) {
+          nameMap[id] = "알 수 없음";
+        }
+      })
+    );
+
+    setUserNames((prev) => ({ ...prev, ...nameMap }));
+  };
+
+  const updateStatus = async (enrollment, newStatus) => {
     try {
-      await fetch("/api/study/updateStatus", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, user, studyDetail, status }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/enrollments/${enrollment.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            introduce: enrollment.introduce,
+            status: newStatus,
+            user: { id: enrollment.user.id },
+            studyGroup: { id: enrollment.studyGroup.id },
+          }),
+        }
+      );
+
+      if (!res.ok) throw new Error("상태 변경 실패");
+      setRequests((prev) => prev.filter((r) => r.id !== enrollment.id));
     } catch (error) {
       console.error(error);
       alert("상태 변경에 실패했습니다.");
@@ -39,34 +85,30 @@ export default function Request({ study }) {
         <div>수락</div>
         <div>거절</div>
       </div>
-      {filteredRequests.length > 0 ? (
-        filteredRequests.map((req, idx) => (
+      {requests.length > 0 ? (
+        requests.map((req, idx) => (
           <div
             key={req.id}
             className="grid grid-cols-5 items-center py-2 px-3 text-sm hover:bg-gray-50"
           >
             <div>{idx + 1}</div>
-            <div>{req.user}</div>
+            <div>{userNames[req.user.id] || "로딩 중..."}</div>
             <div>{req.introduce}</div>
             <div>
-              {req.status === "pending" && (
-                <button
-                  onClick={() => updateStatus(req.id, req.user, req.studyDetail, "approved")}
-                  className="text-green-500 hover:underline"
-                >
-                  수락
-                </button>
-              )}
+              <button
+                onClick={() => updateStatus(req, "APPROVED")}
+                className="text-green-500 hover:underline"
+              >
+                수락
+              </button>
             </div>
             <div>
-              {req.status === "pending" && (
-                <button
-                  onClick={() => updateStatus(req.id, req.user, req.studyDetail, "rejected")}
-                  className="text-red-500 hover:underline"
-                >
-                  거절
-                </button>
-              )}
+              <button
+                onClick={() => updateStatus(req, "REJECTED")}
+                className="text-red-500 hover:underline"
+              >
+                거절
+              </button>
             </div>
           </div>
         ))
