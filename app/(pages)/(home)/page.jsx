@@ -13,6 +13,7 @@ export default function Home() {
   const [userId, setUserId] = useState(null);
   const [myStudies, setMyStudies] = useState([]);
   const [leaderStudies, setLeaderStudies] = useState([]);
+  const [interestedStudyIds, setInterestedStudyIds] = useState([]);
 
   useEffect(() => {
     const user = localStorage.getItem("currentUser");
@@ -52,20 +53,33 @@ export default function Home() {
   useEffect(() => {
     if (!userId) return;
 
+    const fetchInterested = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/interested-studies/user/${userId}`, {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("관심 스터디 조회 실패");
+
+        const data = await res.json();
+        const ids = data.data.map((item) => item.studyGroup.id);
+        setInterestedStudyIds(ids);
+      } catch (err) {
+        console.error("관심 스터디 ID 조회 실패:", err);
+      }
+    };
+
     const fetchMy = async () => {
       try {
-        // 사용자 정보 조회
         const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
           method: "GET",
           credentials: "include",
         });
 
         if (!userRes.ok) throw new Error("회원 정보를 불러올 수 없습니다.");
-
         const user = await userRes.json();
         setUserId(user.id);
 
-        // 두 API 병렬 호출
         const [leaderRes, memberRes] = await Promise.allSettled([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/leader/${user.id}`, {
             method: "GET",
@@ -88,12 +102,10 @@ export default function Home() {
             ? (await memberRes.value.json()).data || []
             : [];
 
-        // 중복 제거
         const combined = [...leaderData, ...memberData].filter(
           (study, index, self) => index === self.findIndex((s) => s.id === study.id)
         );
         
-        console.log(combined)
         setMyStudies(combined);
       } catch (err) {
         console.error("스터디 데이터 조회 실패:", err);
@@ -116,17 +128,11 @@ export default function Home() {
       }
     };
 
-    fetchMy();
     fetchLeader();
+    fetchInterested();
+    fetchMy();
   }, [userId]);
 
-  // 🔹 전체 목록에서 필터링
-  const leaderGroupsByFilter = studyData.filter((item) => item.leader?.id === userId);
-  const memberGroupsByFilter = studyData.filter((item) =>
-    item.members?.some((m) => m.id === userId)
-  );
-
-  // 🔹 추천 그룹: 전체 목록 - 내가 속한 스터디 id 빼기
   const myIds = new Set([...myStudies, ...leaderStudies].map((s) => s.id));
   const recommendedGroups = studyData.filter((s) => !myIds.has(s.id));
 
@@ -180,7 +186,7 @@ export default function Home() {
                     tag={item.keywords?.[0]}
                     content={item.title}
                     leader={`ID: ${item.leader?.id}`}
-                    like={4}
+                    initiallyLiked={interestedStudyIds.includes(item.id)}
                     url="?tab=manage"
                   />
                 ))}
@@ -204,7 +210,7 @@ export default function Home() {
                     tag={item.keywords?.[0]}
                     content={item.title}
                     leader={`ID: ${item.leader?.id}`}
-                    like={4}
+                    initiallyLiked={interestedStudyIds.includes(item.id)}
                     url="?tab=members"
                   />
                 ))}
@@ -224,7 +230,7 @@ export default function Home() {
               tag={item.keywords?.[0]}
               content={item.title}
               leader={`ID: ${item.leader?.id}`}
-              like={4}
+              initiallyLiked={interestedStudyIds.includes(item.id)}
               url="?tab=intro"
             />
           ))}
