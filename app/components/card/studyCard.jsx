@@ -4,90 +4,140 @@ import Link from "next/link";
 import { FaHeart } from "react-icons/fa6";
 import { useEffect, useState } from "react";
 
-export default function StudyCard({ tag, content, leader, like, detail, url }) {
-  const [likeCount, setLikeCount] = useState(like);
-  const [liked, setLiked] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [user, setName] = useState("");
+export default function StudyCard({
+  tag,
+  content,
+  leader,
+  detail,
+  url,
+  initiallyLiked = false,
+}) {
+  const [liked, setLiked] = useState(initiallyLiked);
+  const [interestedId, setInterestedId] = useState(null);
+  const [leaderName, setLeaderName] = useState("로딩 중...");
 
   useEffect(() => {
-    const currentEmail = localStorage.getItem("currentUser");
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find((u) => u.email === currentEmail);
-    
-    if (user) setName(user.name);
-    
-    if (!user) {
-      setLiked(false);
-      setLoading(false);
-      return;
-    }
-
-    async function fetchLikes() {
+    const fetchDisplayName = async () => {
       try {
-        const res = await fetch("/api/studyLikes");
-        if (!res.ok) throw new Error("Failed to fetch likes");
-        const studyLikes = await res.json();
-        const current = studyLikes.find((item) => item.studyDetail === detail);
-        if (current) {
-          setLiked(current.likedUsers.includes(user));
-          setLikeCount(current.likedUsers.length);
-        } else {
-          setLiked(false);
-          setLikeCount(0);
-        }
-      } catch (error) {
-        console.error(error);
-        setLiked(false);
-        setLikeCount(0);
-      } finally {
-        setLoading(false);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${leader}/summary`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        setLeaderName(data.data.displayName);
+      } catch (err) {
+        console.error("리더 이름 조회 실패:", err);
+        setLeaderName("알 수 없음");
       }
-    }
-    fetchLikes();
-  }, [detail, user]);
+    };
+
+    if (leader) fetchDisplayName();
+  }, [leader]);
+
+  useEffect(() => {
+    if (!initiallyLiked) return;
+
+    const fetchInterestedId = async () => {
+      try {
+        const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!userRes.ok) return;
+        const user = await userRes.json();
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/interested-studies/user/${user.id}`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const found = data.data.find(
+          (item) => item.studyGroup.id === detail && !item.isDeleted
+        );
+
+        if (found) setInterestedId(found.id);
+      } catch (err) {
+        console.error("관심 ID 조회 실패:", err);
+      }
+    };
+
+    fetchInterestedId();
+  }, [initiallyLiked, detail]);
 
   const handleLike = async (e) => {
     e.preventDefault();
-    if (!user) return alert("로그인이 필요합니다.");
-
-    const action = liked ? "unlike" : "like";
 
     try {
-      const res = await fetch("/api/studyLikes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          studyDetail: detail,
-          userName : user,
-          action,
-        }),
+      const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+        method: "GET",
+        credentials: "include",
       });
 
-      if (!res.ok) {
-        alert("좋아요 처리에 실패했습니다.");
+      if (!userRes.ok) {
+        alert("로그인이 필요합니다.");
         return;
       }
 
-      // 성공하면 상태 업데이트
-      setLiked(!liked);
-      setLikeCount((count) => (action === "like" ? count + 1 : Math.max(count - 1, 0)));
+      const user = await userRes.json();
+      const userId = user.id;
 
-      // 만약 localStorage에 studyGroups가 있으면 좋아요 수도 동기화
-      const groups = JSON.parse(localStorage.getItem("studyGroups")) || [];
-      const updatedGroups = groups.map((g) =>
-        g.id === detail
-          ? { ...g, like: action === "like" ? likeCount + 1 : Math.max(likeCount - 1, 0) }
-          : g
-      );
-      localStorage.setItem("studyGroups", JSON.stringify(updatedGroups));
-    } catch (error) {
-      alert("네트워크 오류가 발생했습니다.");
-      console.error(error);
+      if (!liked) {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/interested-studies`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            data: {
+              user: { id: userId },
+              studyGroup: { id: detail },
+            },
+          }),
+        });
+
+        if (!res.ok) {
+          alert("관심 등록에 실패했습니다.");
+          return;
+        }
+
+        const result = await res.json();
+        setInterestedId(result.data.id);
+        setLiked(true);
+      } else {
+        if (!interestedId) {
+          alert("관심 항목 ID를 찾을 수 없습니다.");
+          return;
+        }
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/interested-studies/${interestedId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          }
+        );
+
+        if (!res.ok) {
+          alert("관심 해제에 실패했습니다.");
+          return;
+        }
+
+        setLiked(false);
+        setInterestedId(null);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("서버 오류가 발생했습니다.");
     }
   };
-
-  if (loading) return <div>Loading...</div>;
 
   return (
     <Link href={`/studyGroup/${detail}${url ?? ""}`}>
@@ -101,13 +151,12 @@ export default function StudyCard({ tag, content, leader, like, detail, url }) {
         <div>
           <div className="bg-black h-0.5 mb-2" />
           <div className="flex flex-row justify-between text-black font-bold">
-            <h1 className="py-2">{leader}</h1>
+            <h1 className="py-2">{leaderName}</h1>
             <button
               onClick={handleLike}
               className="flex flex-row items-center space-x-1 justify-center bg-gray-300 px-4 py-2 rounded-xl hover:bg-pink-200"
             >
               <FaHeart className={liked ? "text-red-500" : "text-gray-600"} />
-              <h1>{likeCount}</h1>
             </button>
           </div>
         </div>

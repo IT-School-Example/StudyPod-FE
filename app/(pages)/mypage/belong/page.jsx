@@ -29,11 +29,10 @@ export default function Belong() {
             method: "GET",
             credentials: "include",
           }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/my`, {
-            method: "POST",
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/my?userId=${user.id}`, {
+            method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify({ userId: user.id }),
           }),
         ]);
 
