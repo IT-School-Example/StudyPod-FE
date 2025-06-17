@@ -62,7 +62,7 @@ export default function StudyIntro({ study }) {
 
         <div>장소</div>
         <div className="font-semibold">
-          {study.address?.sido?.sidoNm} {study.address?.sggNm}
+          {study.address?.sido?.sidoNm}
         </div>
 
         <div>인원</div>
