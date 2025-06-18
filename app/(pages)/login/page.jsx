@@ -4,12 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useUser } from "@/context/UserContext";
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoggedIn, SetIsLoggedIn] = useState(false);
+  const { setUser } = useUser();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,16 +22,25 @@ export default function Login() {
       },
       credentials: "include",
       body: JSON.stringify({
-        data:{ email, password }
+        data: { email, password },
       }),
     });
 
     if (response.ok) {
-      // const text = await response.text();
-      // console.log("응답 내용:", text);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+          method: "GET",
+          credentials: "include",
+        });
 
-      SetIsLoggedIn(true);
-      router.push("/");
+        if (!res.ok) throw new Error("사용자 정보 조회 실패");
+
+        const result = await res.json();
+        setUser(result);
+        router.push("/");
+      } catch (err) {
+        alert("로그인은 되었으나 사용자 정보 불러오기에 실패했습니다.");
+      }
     } else {
       alert("이메일 또는 비밀번호가 올바르지 않습니다.");
     }
@@ -49,9 +59,7 @@ export default function Login() {
       </div>
       <div className="w-full h-screen flex items-center justify-center bg-white">
         <div className="w-full max-w-sm p-6">
-          <h1 className="text-2xl font-bold text-center mb-10 text-black">
-            로그인
-          </h1>
+          <h1 className="text-2xl font-bold text-center mb-10 text-black">로그인</h1>
 
           <div className="mb-6">
             <label className="block text-sm text-gray-500 mb-1">이메일</label>
@@ -72,12 +80,14 @@ export default function Login() {
               className="w-full border rounded-md px-4 py-2 outline-none focus:ring-2 focus:ring-brown-500"
             />
           </div>
+
           <button
             onClick={handleLogin}
             className="w-full py-3 rounded-md bg-[#4B2E1E] text-white font-semibold mb-6"
           >
             로그인
           </button>
+
           <div className="flex gap-2 justify-center text-center">
             <Link
               href="/findPW"
