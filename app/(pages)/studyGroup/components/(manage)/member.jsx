@@ -2,91 +2,90 @@
 
 import { useEffect, useState } from "react";
 
-export default function Member({ study }) {
+export default function Member({ study, onKickSuccess }) {
   const studyList = Array.isArray(study) ? study : [study];
   const [displayNames, setDisplayNames] = useState({});
-  const [memberMap, setMemberMap] = useState({}); // { studyId: [{ id, role }] }
+  const [memberMap, setMemberMap] = useState({});
 
-  // 회원 조회 + 이름 조회
   useEffect(() => {
     const fetchMembersAndNames = async () => {
-      const allMemberEntries = [];
+      try {
+        const entries = await Promise.all(
+          studyList.map(async (item) => {
+            const studyId = item.id;
+            const members = [];
 
-      for (const item of studyList) {
-        const studyId = item.id;
-        const studyMembers = [];
+            if (item.leader?.id) {
+              members.push({ id: item.leader.id, role: "리더" });
+            }
 
-        // 1. 리더 추가
-        if (item.leader?.id) {
-          studyMembers.push({ id: item.leader.id, role: "리더" });
-        }
+            try {
+              const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/study-groups/${studyId}/enrollments?status=APPROVED`,
+                { method: "GET", credentials: "include" }
+              );
+              const result = await res.json();
 
-        // 2. 일반회원 조회 API 호출
-        try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/study-groups/${studyId}/users?enrollmentStatus=APPROVED`,
-            { method: "GET", credentials: "include" }
-          );
-          const result = await res.json();
-
-          if (result.resultCode === "OK" && Array.isArray(result.data)) {
-            const approvedUsers = result.data;
-            approvedUsers.forEach((user) => {
-              if (user.id !== item.leader?.id) {
-                studyMembers.push({ id: user.id, role: "일반회원" });
+              if (result.resultCode === "OK" && Array.isArray(result.data)) {
+                result.data.forEach((enrollment) => {
+                  const user = enrollment.user;
+                  if (user.id !== item.leader?.id) {
+                    members.push({ id: user.id, enrollmentId: enrollment.id, role: "일반회원" });
+                  }
+                });
               }
-            });
-          }
-        } catch (e) {
-          console.error(`스터디 ID ${studyId}의 회원 목록 조회 실패`, e);
-        }
+            } catch (err) {
+              console.error(`스터디 ID ${studyId}의 회원 목록 조회 실패`, err);
+            }
 
-        allMemberEntries.push([studyId, studyMembers]);
+            return [studyId, members];
+          })
+        );
+
+        const map = Object.fromEntries(entries);
+        setMemberMap(map);
+
+        const allUserIds = entries.flatMap(([, members]) => members.map((m) => m.id));
+        const uniqueIds = [...new Set(allUserIds)];
+
+        const results = await Promise.allSettled(
+          uniqueIds.map(async (id) => {
+            try {
+              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${id}/summary`, {
+                method: "GET",
+                credentials: "include",
+              });
+              if (!res.ok) throw new Error();
+              const data = await res.json();
+              return { id, name: data.data.displayName };
+            } catch (e) {
+              return { id, name: "이름없음" };
+            }
+          })
+        );
+
+        const nameMap = {};
+        results.forEach((result) => {
+          if (result.status === "fulfilled") {
+            nameMap[result.value.id] = result.value.name;
+          }
+        });
+
+        setDisplayNames(nameMap);
+      } catch (e) {
+        console.error("전체 회원 정보 조회 실패", e);
       }
-
-      const memberMapObject = Object.fromEntries(allMemberEntries);
-      setMemberMap(memberMapObject);
-
-      const allUserIds = allMemberEntries.flatMap(([, members]) =>
-        members.map((m) => m.id)
-      );
-      const uniqueIds = [...new Set(allUserIds)];
-
-      const results = await Promise.allSettled(
-        uniqueIds.map(async (id) => {
-          try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${id}/summary`, {
-              method: "GET",
-              credentials: "include",
-            });
-            if (!res.ok) throw new Error();
-            const data = await res.json();
-            return { id, name: data.data.displayName };
-          } catch (e) {
-            return { id, name: "이름없음" };
-          }
-        })
-      );
-
-      const nameMap = {};
-      results.forEach((result) => {
-        if (result.status === "fulfilled") {
-          nameMap[result.value.id] = result.value.name;
-        }
-      });
-
-      setDisplayNames(nameMap);
     };
 
     fetchMembersAndNames();
   }, [study]);
 
-  // 렌더링할 행 구성
   const rows = studyList.flatMap((item, studyIndex) => {
     const members = memberMap[item.id] || [];
     return members.map((member, memberIndex) => ({
       studyName: item.title,
       memberId: member.id,
+      enrollmentId: member.enrollmentId,
       memberName: displayNames[member.id] || "로딩 중...",
       role: member.role,
       studyId: item.id,
@@ -113,14 +112,46 @@ export default function Member({ study }) {
           <div>{row.memberName}</div>
           <div>{row.role}</div>
           <div>
-            <button
-              onClick={() =>
-                alert(`강퇴 기능 구현 필요 (스터디 ID: ${row.studyId}, 구성원 ID: ${row.memberId})`)
-              }
-              className="text-red-500 hover:underline"
-            >
-              강퇴
-            </button>
+            {row.role !== "리더" && (
+              <button
+                onClick={async () => {
+                  const confirmKick = confirm(
+                    "정말로 강퇴하시겠습니까?"
+                  );
+                  if (!confirmKick) return;
+
+                  try {
+                    const res = await fetch(
+                      `${process.env.NEXT_PUBLIC_API_URL}/enrollments/member-kick/${row.enrollmentId}`,
+                      {
+                        method: "PATCH",
+                        credentials: "include",
+                      }
+                    );
+                    const result = await res.json();
+                    if (res.ok && result.resultCode === "OK") {
+                      alert("강퇴되었습니다.");
+                      onKickSuccess?.();
+                      setMemberMap((prev) => {
+                        const updated = { ...prev };
+                        updated[row.studyId] = updated[row.studyId].filter(
+                          (m) => m.enrollmentId !== row.enrollmentId
+                        );
+                        return updated;
+                      });
+                    } else {
+                      alert(`강퇴 실패: ${result.description || "알 수 없는 오류"}`);
+                    }
+                  } catch (e) {
+                    console.error("강퇴 요청 실패", e);
+                    alert("강퇴 중 오류가 발생했습니다.");
+                  }
+                }}
+                className="text-red-500 hover:underline"
+              >
+                강퇴
+              </button>
+            )}
           </div>
         </div>
       ))}
