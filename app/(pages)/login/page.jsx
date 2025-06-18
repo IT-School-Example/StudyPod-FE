@@ -29,7 +29,6 @@ export default function Login() {
       // const text = await response.text();
       // console.log("응답 내용:", text);
 
-      localStorage.setItem("currentUser", email);
       SetIsLoggedIn(true);
       router.push("/");
     } else {
