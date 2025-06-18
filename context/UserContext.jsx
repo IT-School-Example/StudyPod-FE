@@ -10,18 +10,22 @@ export function UserProvider({ children }) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        console.log("🌱 fetch /user/me 실행");
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
           method: "GET",
           credentials: "include",
         });
 
-        if (!res.ok) throw new Error("Not authenticated");
+        if (res.status === 401) {
+          setUser(null);
+          return;
+        }
+
+        if (!res.ok) throw new Error("서버 오류");
 
         const result = await res.json();
-        console.log("✅ 유저 정보:", result);
         setUser(result);
       } catch (err) {
+        if (err.message !== "서버 오류") return;
         setUser(null);
       }
     };
