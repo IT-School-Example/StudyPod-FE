@@ -2,27 +2,23 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/navigation";
 import { IoPersonOutline, IoExitOutline } from "react-icons/io5";
 
 export default function Navbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const user = localStorage.getItem("currentUser");
-    setIsLoggedIn(!!user);
-  }, []);
+  const { user, setUser } = useUser();
+  const router = useRouter();
 
   const handleLogout = async () => {
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/logout`, {
         method: "POST",
-        credentials: "include", 
+        credentials: "include",
       });
 
-      localStorage.removeItem("currentUser");
-      setIsLoggedIn(false);
-      window.location.href = "/";
+      setUser(null);
+      router.refresh();
     } catch (error) {
       console.error("로그아웃 실패:", error);
     }
@@ -55,7 +51,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex flex-row px-10 py-7 text-white space-x-5 text-center items-center">
-          {isLoggedIn ? (
+          {user ? (
             <>
               <Link href="/createGroup">
                 <div className="inline-block px-3 h-6 rounded-lg bg-[#4B2E1E]">
