@@ -182,7 +182,7 @@ export default function Search() {
               detail={item.id}
               tag={item.keywords?.[0] || "스터디"}
               content={item.title}
-              leader={`ID: ${item.leader?.id}`}
+              leader={item.leader?.id}
               like={item.likeCount || 0}
               url={`?tab=intro`}
             />
