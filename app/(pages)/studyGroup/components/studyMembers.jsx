@@ -120,7 +120,7 @@ export default function StudyMembers({ study }) {
 
       {tab === "info" && (
         <div className="space-y-2 bg-gray-100 p-4 rounded">
-          <p><strong>태그:</strong> {study.ketwords}</p>
+          <p><strong>태그:</strong> {study.keywords}</p>
           <p><strong>제목:</strong> {study.title}</p>
           <p>
             <strong>일정:</strong>{" "}
