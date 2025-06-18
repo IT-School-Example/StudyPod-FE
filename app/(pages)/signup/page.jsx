@@ -60,9 +60,8 @@ export default function SignUp() {
 
       if (!response.ok) throw new Error("회원가입 실패");
 
-      localStorage.setItem("currentUser", email);
       alert("회원가입이 완료되었습니다.");
-      router.push("/");
+      router.push("/login");
     } catch (error) {
       console.error("회원가입 오류:", error);
       alert("회원가입 중 문제가 발생했습니다.");
