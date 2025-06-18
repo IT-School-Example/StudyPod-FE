@@ -18,11 +18,12 @@ export default function Navbar() {
       });
 
       setUser(null);
-      router.refresh();
+      router.push("/");
     } catch (error) {
       console.error("로그아웃 실패:", error);
     }
   };
+
 
   return (
     <div className="w-full h-20 bg-white flex flex-row justify-between top-0 sticky shadow-2xs z-50">
