@@ -1,39 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useUser } from "@/context/UserContext";
+import ScrollButton from "@/app/components/common/ScrollButton";
+import { useDraggableScroll } from "@/app/hooks/useDraggableScroll";
 import Navbar from "@/app/components/Navbar";
 import StudyCard from "@/app/components/card/studyCard";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
+  const { user } = useUser();
   const [offset, setOffset] = useState({ y: 0 });
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [studyData, setStudyData] = useState([]);
-  const [userId, setUserId] = useState(null);
   const [myStudies, setMyStudies] = useState([]);
   const [leaderStudies, setLeaderStudies] = useState([]);
   const [interestedStudyIds, setInterestedStudyIds] = useState([]);
-  const router = useRouter();
+
+  const leaderScrollRef = useDraggableScroll();
+  const myScrollRef = useDraggableScroll();
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      const user = localStorage.getItem("currentUser");
-      setIsLoggedIn(!!user);
+    if (!user || !user.id) return;
 
+    const fetchData = async () => {
       try {
-        const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
-          method: "GET",
-          credentials: "include",
-        });
+        const id = user.id;
 
-        if (!userRes.ok) throw new Error("유저 정보 불러오기 실패");
-        const userData = await userRes.json();
-        const id = userData.id;
-        setUserId(id);
-
-        // 관심 스터디 조회
         const interestedRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/interested-studies/user/${id}`, {
           method: "GET",
           credentials: "include",
@@ -45,8 +38,7 @@ export default function Home() {
           setInterestedStudyIds(ids);
         }
 
-        // 소속 스터디 조회 (/my 기준)
-        const myRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/my?userId=${id}`, {
+        const myRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/user/${id}/enrolled-groups?enrollmentStatus=APPROVED`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -57,7 +49,6 @@ export default function Home() {
           setMyStudies(myData.data || []);
         }
 
-        // 리더 스터디 조회
         const leaderRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/leader/${id}`, {
           method: "GET",
           credentials: "include",
@@ -67,8 +58,17 @@ export default function Home() {
           const leaderData = await leaderRes.json();
           setLeaderStudies(leaderData.data || []);
         }
+      } catch (err) {
+        console.error("초기 데이터 불러오기 실패:", err);
+      }
+    };
 
-        // 전체 스터디
+    fetchData();
+  }, [user]);
+
+  useEffect(() => {
+    const fetchAllStudies = async () => {
+      try {
         const allRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups`, {
           method: "GET",
           credentials: "include",
@@ -79,18 +79,19 @@ export default function Home() {
           setStudyData(allData.data || []);
         }
       } catch (err) {
-        console.error("초기 데이터 불러오기 실패:", err);
+        console.error("전체 스터디 불러오기 실패:", err);
       }
     };
 
-    fetchInitialData();
+    fetchAllStudies();
   }, []);
 
-  const myIds = new Set([
+  const combinedStudies = [
     ...(Array.isArray(myStudies) ? myStudies : []),
     ...(Array.isArray(leaderStudies) ? leaderStudies : []),
-  ].map((s) => s.id));
-
+  ];
+  const mergedMyStudies = Array.from(new Map(combinedStudies.map((s) => [s.id, s])).values());
+  const myIds = new Set(mergedMyStudies.map((s) => s.id));
   const recommendedGroups = studyData.filter((s) => !myIds.has(s.id));
 
   const handleMouseMove = (e) => {
@@ -102,6 +103,7 @@ export default function Home() {
   return (
     <div className="w-full h-full flex flex-col bg-white px-24">
       <Navbar />
+
       <div className="w-full h-96 bg-white">
         <div
           onMouseMove={handleMouseMove}
@@ -109,73 +111,63 @@ export default function Home() {
         >
           <div
             className="transition-transform duration-100"
-            style={{
-              transform: `translate(0px, ${offset.y}px)`,
-              transition: "transform 0.3s ease-out",
-            }}
+            style={{ transform: `translate(0px, ${offset.y}px)`, transition: "transform 0.3s ease-out" }}
           >
-            <Image
-              src="/banner.png"
-              alt="banner"
-              width={1700}
-              height={384}
-              priority
-              className="object-cover brightness-50"
-            />
+            <Image src="/banner.png" alt="banner" width={1700} height={384} priority className="object-cover brightness-50" />
           </div>
         </div>
       </div>
 
-      {isLoggedIn && (
-        <>
-          {leaderStudies.length > 0 && (
-            <section className="py-10">
-              <div className="flex justify-between items-center">
-                <h1 className="font-bold text-2xl text-black">관리 스터디</h1>
-                <Link href="/mypage/manage" className="text-sm text-gray-500">
-                  전체 보기
-                </Link>
-              </div>
-              <div className="flex flex-wrap gap-6 mt-5">
-                {leaderStudies.map((item) => (
-                  <StudyCard
-                    key={item.id}
-                    detail={item.id}
-                    tag={item.keywords?.[0]}
-                    content={item.title}
-                    leader={item.leader?.id}
-                    initiallyLiked={interestedStudyIds.includes(item.id)}
-                    url="?tab=manage"
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+      {user && leaderStudies.length > 0 && (
+        <section className="py-10 relative">
+          <div className="flex justify-between items-center">
+            <h1 className="font-bold text-4xl text-black">관리 스터디</h1>
+            <Link href="/mypage/manage" className="text-sm text-gray-500">전체 보기</Link>
+          </div>
+          <ScrollButton direction="left" onClick={() => leaderScrollRef.current.scrollLeft -= 300} />
+          <ScrollButton direction="right" onClick={() => leaderScrollRef.current.scrollLeft += 300} />
+          <div ref={leaderScrollRef} className="overflow-hidden cursor-grab select-none">
+            <div className="flex gap-4 flex-nowrap min-h-[360px] items-start py-4">
+              {leaderStudies.map((item) => (
+                <StudyCard
+                  key={item.id}
+                  detail={item.id}
+                  tag={item.keywords?.[0]}
+                  content={item.title}
+                  leader={item.leader?.id}
+                  initiallyLiked={interestedStudyIds.includes(item.id)}
+                  url="?tab=manage"
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
-          {myStudies.length > 0 && (
-            <section className="py-10">
-              <div className="flex justify-between items-center">
-                <h1 className="font-bold text-2xl text-black">소속 스터디</h1>
-                <Link href="/mypage/belong" className="text-sm text-gray-500">
-                  전체 보기
-                </Link>
-              </div>
-              <div className="flex flex-wrap gap-6 mt-5">
-                {myStudies.map((item) => (
-                  <StudyCard
-                    key={item.id}
-                    detail={item.id}
-                    tag={item.keywords?.[0]}
-                    content={item.title}
-                    leader={item.leader?.id}
-                    initiallyLiked={interestedStudyIds.includes(item.id)}
-                    url="?tab=members"
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-        </>
+      {user && mergedMyStudies.length > 0 && (
+        <section className="py-10 relative">
+          <div className="flex justify-between items-center">
+            <h1 className="font-bold text-4xl text-black">소속 스터디</h1>
+            <Link href="/mypage/belong" className="text-sm text-gray-500">전체 보기</Link>
+          </div>
+          <ScrollButton direction="left" onClick={() => myScrollRef.current.scrollLeft -= 300} />
+          <ScrollButton direction="right" onClick={() => myScrollRef.current.scrollLeft += 300} />
+          <div ref={myScrollRef} className="overflow-hidden cursor-grab select-none">
+            <div className="flex gap-4 flex-nowrap min-h-[360px] items-start py-4">
+              {mergedMyStudies.map((item) => (
+                <StudyCard
+                  key={item.id}
+                  detail={item.id}
+                  tag={item.keywords?.[0]}
+                  content={item.title}
+                  leader={item.leader?.id}
+                  initiallyLiked={interestedStudyIds.includes(item.id)}
+                  url="?tab=members"
+                />
+              ))}
+            </div>
+          </div>
+        </section>
       )}
 
       <section className="py-10">
