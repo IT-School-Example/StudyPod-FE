@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import StudyCard from "@/app/components/card/studyCard";
 import Image from "next/image";
@@ -14,126 +15,82 @@ export default function Home() {
   const [myStudies, setMyStudies] = useState([]);
   const [leaderStudies, setLeaderStudies] = useState([]);
   const [interestedStudyIds, setInterestedStudyIds] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
-    const user = localStorage.getItem("currentUser");
-    setIsLoggedIn(!!user);
+    const fetchInitialData = async () => {
+      const user = localStorage.getItem("currentUser");
+      setIsLoggedIn(!!user);
 
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error("유저 정보 불러오기 실패");
-        const data = await res.json();
-        setUserId(data.id);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    const fetchAll = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups`, {
-          method: "GET",
-          credentials: "include",
-        });
-        const json = await res.json();
-        setStudyData(json.data || []);
-      } catch (err) {
-        console.error("전체 스터디 조회 실패:", err);
-      }
-    };
-
-    fetchUser();
-    fetchAll();
-  }, []);
-
-  useEffect(() => {
-    if (!userId) return;
-
-    const fetchInterested = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/interested-studies/user/${userId}`, {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error("관심 스터디 조회 실패");
-
-        const data = await res.json();
-        const ids = data.data.map((item) => item.studyGroup.id);
-        setInterestedStudyIds(ids);
-      } catch (err) {
-        console.error("관심 스터디 ID 조회 실패:", err);
-      }
-    };
-
-    const fetchMy = async () => {
       try {
         const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
           method: "GET",
           credentials: "include",
         });
 
-        if (!userRes.ok) throw new Error("회원 정보를 불러올 수 없습니다.");
-        const user = await userRes.json();
-        setUserId(user.id);
+        if (!userRes.ok) throw new Error("유저 정보 불러오기 실패");
+        const userData = await userRes.json();
+        const id = userData.id;
+        setUserId(id);
 
-        const [leaderRes, memberRes] = await Promise.allSettled([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/leader/${user.id}`, {
-            method: "GET",
-            credentials: "include",
-          }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/my?userId=${user.id}`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-          }),
-        ]);
+        // 관심 스터디 조회
+        const interestedRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/interested-studies/user/${id}`, {
+          method: "GET",
+          credentials: "include",
+        });
 
-        const leaderData =
-          leaderRes.status === "fulfilled" && leaderRes.value.ok
-            ? (await leaderRes.value.json()).data || []
-            : [];
+        if (interestedRes.ok) {
+          const interestedData = await interestedRes.json();
+          const ids = interestedData.data.map((item) => item.studyGroup.id);
+          setInterestedStudyIds(ids);
+        }
 
-        const memberData =
-          memberRes.status === "fulfilled" && memberRes.value.ok
-            ? (await memberRes.value.json()).data || []
-            : [];
+        // 소속 스터디 조회 (/my 기준)
+        const myRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/my?userId=${id}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
 
-        const combined = [...leaderData, ...memberData].filter(
-          (study, index, self) => index === self.findIndex((s) => s.id === study.id)
-        );
-        
-        setMyStudies(combined);
+        if (myRes.ok) {
+          const myData = await myRes.json();
+          setMyStudies(myData.data || []);
+        }
+
+        // 리더 스터디 조회
+        const leaderRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/leader/${id}`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (leaderRes.ok) {
+          const leaderData = await leaderRes.json();
+          setLeaderStudies(leaderData.data || []);
+        }
+
+        // 전체 스터디
+        const allRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (allRes.ok) {
+          const allData = await allRes.json();
+          setStudyData(allData.data || []);
+        }
       } catch (err) {
-        console.error("스터디 데이터 조회 실패:", err);
-        alert("로그인이 필요합니다.");
-        router.push("/login");
+        console.error("초기 데이터 불러오기 실패:", err);
       }
     };
 
-    const fetchLeader = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/study-groups/leader/${userId}`,
-          { method: "GET", credentials: "include" }
-        );
-        const json = await res.json();
-        console.log(json.data)
-        setLeaderStudies(json.data || []);
-      } catch (err) {
-        console.warn("리더 스터디 조회 실패:", err);
-      }
-    };
+    fetchInitialData();
+  }, []);
 
-    fetchLeader();
-    fetchInterested();
-    fetchMy();
-  }, [userId]);
+  const myIds = new Set([
+    ...(Array.isArray(myStudies) ? myStudies : []),
+    ...(Array.isArray(leaderStudies) ? leaderStudies : []),
+  ].map((s) => s.id));
 
-  const myIds = new Set([...myStudies, ...leaderStudies].map((s) => s.id));
   const recommendedGroups = studyData.filter((s) => !myIds.has(s.id));
 
   const handleMouseMove = (e) => {
@@ -162,6 +119,7 @@ export default function Home() {
               alt="banner"
               width={1700}
               height={384}
+              priority
               className="object-cover brightness-50"
             />
           </div>

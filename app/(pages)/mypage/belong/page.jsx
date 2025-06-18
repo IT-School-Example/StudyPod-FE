@@ -12,18 +12,16 @@ export default function Belong() {
   useEffect(() => {
     const fetchStudies = async () => {
       try {
-        // 사용자 정보 조회
         const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
           method: "GET",
           credentials: "include",
         });
-
         if (!userRes.ok) throw new Error("회원 정보를 불러올 수 없습니다.");
 
-        const user = await userRes.json();
+        const user = await userRes.json(); // ✅ 여기만 1번 호출
         setUserId(user.id);
 
-        // 두 API 병렬 호출
+        // 이후 user.id 활용
         const [leaderRes, memberRes] = await Promise.allSettled([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/leader/${user.id}`, {
             method: "GET",
@@ -36,14 +34,19 @@ export default function Belong() {
           }),
         ]);
 
+
         const leaderData =
           leaderRes.status === "fulfilled" && leaderRes.value.ok
-            ? (await leaderRes.value.json()).data || []
+            ? Array.isArray((await leaderRes.value.json()).data)
+              ? (await leaderRes.value.json()).data
+              : []
             : [];
 
         const memberData =
           memberRes.status === "fulfilled" && memberRes.value.ok
-            ? (await memberRes.value.json()).data || []
+            ? Array.isArray((await memberRes.value.json()).data)
+              ? (await memberRes.value.json()).data
+              : []
             : [];
 
         // 중복 제거
@@ -54,8 +57,6 @@ export default function Belong() {
         setStudyData(combined);
       } catch (err) {
         console.error("스터디 데이터 조회 실패:", err);
-        alert("로그인이 필요합니다.");
-        router.push("/login");
       }
     };
 

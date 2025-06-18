@@ -71,7 +71,7 @@ export default function Manage({ study }) {
       </div>
 
       {tab === "info" && <Info study={study} />}
-      {tab === "member" && <Member study={study} />}
+      {tab === "member" && <Member study={study} onKickSuccess={() => {}} />}
       {tab === "request" && <Request study={study} />}
       {tab === "board" && <Board study={study} />}
       {tab === "notice" && <Notice study={study} />}
