@@ -113,7 +113,7 @@ export default function CreateGroup() {
       feeType,
       amount: Number(amount),
       leader: { id: userId },
-      address: { id: selectedSidoCd },
+      sido: { sidoCd: selectedSidoCd },
       subjectArea: { id: subjectAreaId },
       keywords: keywords.split(",").map(k => k.trim()),
       weeklySchedules: [weeklySchedule],
@@ -132,7 +132,7 @@ export default function CreateGroup() {
 
       if (!res.ok) throw new Error("스터디 생성 실패");
 
-      router.push(`/study-group/${study.id}?tab=manage`);
+      router.push(`/mypage/manage`);
     } catch (err) {
       console.error("스터디 생성 오류:", err);
       alert("스터디 생성 중 오류가 발생했습니다.");
@@ -140,7 +140,7 @@ export default function CreateGroup() {
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-white items-center px-4 py-10 text-black">
+    <div className="w-full h-full flex flex-col bg-white px-24 items-center px-4 text-black">
       <Navbar />
       <div className="border w-full max-w-3xl p-8 rounded-xl shadow-md">
         <h1 className="text-2xl font-bold mb-6 text-center">스터디 개설</h1>
