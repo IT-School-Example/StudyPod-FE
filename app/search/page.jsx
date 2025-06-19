@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import StudyCard from "@/components/card/studyCard";
 import { subjectOptions, meetingOptions, sidoOptions } from "@/shared/constants";
+import { useUser } from "@/context/UserContext";
+import { useLikedStudies } from "@/hooks/useLikedStudies";
 
 export default function Search() {
   const [query, setQuery] = useState("");
@@ -12,6 +14,8 @@ export default function Search() {
   const [studyMethods, setStudyMethods] = useState([]);
   const [isRecruiting, setIsRecruiting] = useState(false);
   const [studyData, setStudyData] = useState([]);
+  const { user } = useUser();
+  const { likedMap, setLikedMap } = useLikedStudies(user?.id, { fetchDetails: false });
 
   useEffect(() => {
     fetchFilteredStudies();
@@ -140,11 +144,13 @@ export default function Search() {
             <StudyCard
               key={item.id}
               detail={item.id}
-              tag={item.keywords?.[0] || "스터디"}
+              tag={item.keywords?.[0]}
               content={item.title}
               leader={item.leader?.id}
-              like={item.likeCount || 0}
-              url={`?tab=intro`}
+              url="?tab=intro"
+              initiallyLiked={!!likedMap[item.id]}
+              interestedId={likedMap[item.id]}
+              setLikedMap={setLikedMap}
             />
           ))
         ) : (
