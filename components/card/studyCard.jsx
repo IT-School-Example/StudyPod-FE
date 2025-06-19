@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FaHeart } from "react-icons/fa6";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useUser } from "@/context/UserContext";
 import UserName from "@/components/UserName";
 
@@ -12,43 +12,17 @@ export default function StudyCard({
   leader,
   detail,
   url,
-  initiallyLiked = false,
+  initiallyLiked,
+  interestedId,
+  setLikedMap, // 좋아요 변경 시 부모 상태 업데이트용
 }) {
-  const [liked, setLiked] = useState(initiallyLiked);
-  const [interestedId, setInterestedId] = useState(null);
   const { user } = useUser();
-
-  useEffect(() => {
-    if (!initiallyLiked) return;
-
-    const fetchInterestedId = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/interested-studies/user/${user?.id}`,
-          {
-            method: "GET",
-            credentials: "include",
-          }
-        );
-
-        if (!res.ok) return;
-        const data = await res.json();
-
-        const found = data.data.find(
-          (item) => item.studyGroup.id === detail && !item.isDeleted
-        );
-
-        if (found) setInterestedId(found.id);
-      } catch (err) {
-        console.error("관심 ID 조회 실패:", err);
-      }
-    };
-
-    fetchInterestedId();
-  }, [initiallyLiked, detail]);
+  const [liked, setLiked] = useState(initiallyLiked);
+  const [interested, setInterested] = useState(interestedId);
 
   const handleLike = async (e) => {
     e.preventDefault();
+    if (!user) return;
 
     try {
       if (!liked) {
@@ -67,39 +41,34 @@ export default function StudyCard({
           }),
         });
 
-        if (!res.ok) {
-          alert("관심 등록에 실패했습니다.");
-          return;
-        }
+        if (!res.ok) throw new Error("관심 등록 실패");
 
         const result = await res.json();
-        setInterestedId(result.data.id);
+        const newId = result.data.id;
+        setInterested(newId);
         setLiked(true);
+        setLikedMap?.((prev) => ({ ...prev, [detail]: newId }));
       } else {
-        if (!interestedId) {
-          alert("관심 항목 ID를 찾을 수 없습니다.");
-          return;
-        }
-
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/interested-studies/${interestedId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/interested-studies/${interested}`,
           {
             method: "DELETE",
             credentials: "include",
           }
         );
 
-        if (!res.ok) {
-          alert("관심 해제에 실패했습니다.");
-          return;
-        }
+        if (!res.ok) throw new Error("관심 해제 실패");
 
         setLiked(false);
-        setInterestedId(null);
+        setInterested(null);
+        setLikedMap?.((prev) => {
+          const map = { ...prev };
+          delete map[detail];
+          return map;
+        });
       }
     } catch (err) {
-      console.error(err);
-      alert("서버 오류가 발생했습니다.");
+      console.error("관심 토글 에러:", err);
     }
   };
 
