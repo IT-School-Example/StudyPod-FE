@@ -6,6 +6,9 @@ import ScrollButton from "@/components/common/ScrollButton";
 import { useDraggableScroll } from "@/hooks/useDraggableScroll";
 import Navbar from "@/components/Navbar";
 import StudyCard from "@/components/card/studyCard";
+import { useLikedStudies } from "@/hooks/useLikedStudies";
+import { useLeaderStudies } from "@/hooks/useLeaderStudies";
+import { useMyStudies } from "@/hooks/useMyStudies";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -13,58 +16,12 @@ export default function Home() {
   const { user } = useUser();
   const [offset, setOffset] = useState({ y: 0 });
   const [studyData, setStudyData] = useState([]);
-  const [myStudies, setMyStudies] = useState([]);
-  const [leaderStudies, setLeaderStudies] = useState([]);
-  const [interestedStudyIds, setInterestedStudyIds] = useState([]);
+  const myStudies = useMyStudies(user?.id);
+  const leaderStudies = useLeaderStudies(user?.id);
+  const { likedMap, setLikedMap } = useLikedStudies(user?.id, { fetchDetails: false });
 
   const leaderScrollRef = useDraggableScroll();
   const myScrollRef = useDraggableScroll();
-
-  useEffect(() => {
-    if (!user || !user.id) return;
-
-    const fetchData = async () => {
-      try {
-        const id = user.id;
-
-        const interestedRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/interested-studies/user/${id}`, {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (interestedRes.ok) {
-          const interestedData = await interestedRes.json();
-          const ids = interestedData.data.map((item) => item.studyGroup.id);
-          setInterestedStudyIds(ids);
-        }
-
-        const myRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/user/${id}/enrolled-groups?enrollmentStatus=APPROVED`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
-
-        if (myRes.ok) {
-          const myData = await myRes.json();
-          setMyStudies(myData.data || []);
-        }
-
-        const leaderRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/leader/${id}`, {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (leaderRes.ok) {
-          const leaderData = await leaderRes.json();
-          setLeaderStudies(leaderData.data || []);
-        }
-      } catch (err) {
-        console.error("초기 데이터 불러오기 실패:", err);
-      }
-    };
-
-    fetchData();
-  }, [user]);
 
   useEffect(() => {
     const fetchAllStudies = async () => {
@@ -135,8 +92,10 @@ export default function Home() {
                   tag={item.keywords?.[0]}
                   content={item.title}
                   leader={item.leader?.id}
-                  initiallyLiked={interestedStudyIds.includes(item.id)}
                   url="?tab=manage"
+                  initiallyLiked={!!likedMap[item.id]}
+                  interestedId={likedMap[item.id]}
+                  setLikedMap={setLikedMap}
                 />
               ))}
             </div>
@@ -161,8 +120,10 @@ export default function Home() {
                   tag={item.keywords?.[0]}
                   content={item.title}
                   leader={item.leader?.id}
-                  initiallyLiked={interestedStudyIds.includes(item.id)}
                   url="?tab=members"
+                  initiallyLiked={!!likedMap[item.id]}
+                  interestedId={likedMap[item.id]}
+                  setLikedMap={setLikedMap}
                 />
               ))}
             </div>
@@ -180,8 +141,10 @@ export default function Home() {
               tag={item.keywords?.[0]}
               content={item.title}
               leader={item.leader?.id}
-              initiallyLiked={interestedStudyIds.includes(item.id)}
               url="?tab=intro"
+              initiallyLiked={!!likedMap[item.id]}
+              interestedId={likedMap[item.id]}
+              setLikedMap={setLikedMap}
             />
           ))}
         </div>
