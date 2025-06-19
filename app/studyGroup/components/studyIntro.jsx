@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { getSidoName } from "@/shared/utils";
 
 export default function StudyIntro({ study }) {
   const [introduce, setIntroduce] = useState("");
@@ -62,7 +63,7 @@ export default function StudyIntro({ study }) {
 
         <div>장소</div>
         <div className="font-semibold">
-          {study.address?.sido?.sidoNm}
+          {getSidoName(study.sido.sidoCd)}
         </div>
 
         <div>인원</div>

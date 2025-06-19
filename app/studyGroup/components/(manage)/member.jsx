@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import UserName from "@/components/UserName";
 
 export default function Member({ study, onKickSuccess }) {
   const studyList = Array.isArray(study) ? study : [study];
-  const [displayNames, setDisplayNames] = useState({});
   const [memberMap, setMemberMap] = useState({});
 
   useEffect(() => {
-    const fetchMembersAndNames = async () => {
+    const fetchMembers = async () => {
       try {
         const entries = await Promise.all(
           studyList.map(async (item) => {
@@ -42,42 +42,13 @@ export default function Member({ study, onKickSuccess }) {
           })
         );
 
-        const map = Object.fromEntries(entries);
-        setMemberMap(map);
-
-        const allUserIds = entries.flatMap(([, members]) => members.map((m) => m.id));
-        const uniqueIds = [...new Set(allUserIds)];
-
-        const results = await Promise.allSettled(
-          uniqueIds.map(async (id) => {
-            try {
-              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${id}/summary`, {
-                method: "GET",
-                credentials: "include",
-              });
-              if (!res.ok) throw new Error();
-              const data = await res.json();
-              return { id, name: data.data.displayName };
-            } catch (e) {
-              return { id, name: "이름없음" };
-            }
-          })
-        );
-
-        const nameMap = {};
-        results.forEach((result) => {
-          if (result.status === "fulfilled") {
-            nameMap[result.value.id] = result.value.name;
-          }
-        });
-
-        setDisplayNames(nameMap);
+        setMemberMap(Object.fromEntries(entries));
       } catch (e) {
         console.error("전체 회원 정보 조회 실패", e);
       }
     };
 
-    fetchMembersAndNames();
+    fetchMembers();
   }, [study]);
 
   const rows = studyList.flatMap((item, studyIndex) => {
@@ -86,7 +57,6 @@ export default function Member({ study, onKickSuccess }) {
       studyName: item.title,
       memberId: member.id,
       enrollmentId: member.enrollmentId,
-      memberName: displayNames[member.id] || "로딩 중...",
       role: member.role,
       studyId: item.id,
       index: `${studyIndex + 1}-${memberIndex + 1}`,
@@ -109,15 +79,13 @@ export default function Member({ study, onKickSuccess }) {
         >
           <div>{index + 1}</div>
           <div>{row.studyName}</div>
-          <div>{row.memberName}</div>
+          <div><UserName userId={row.memberId} /></div>
           <div>{row.role}</div>
           <div>
             {row.role !== "리더" && (
               <button
                 onClick={async () => {
-                  const confirmKick = confirm(
-                    "정말로 강퇴하시겠습니까?"
-                  );
+                  const confirmKick = confirm("정말로 강퇴하시겠습니까?");
                   if (!confirmKick) return;
 
                   try {

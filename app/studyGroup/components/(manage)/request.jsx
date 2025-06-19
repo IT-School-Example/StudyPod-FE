@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
+import UserName from "@/components/UserName";
 
 export default function Request({ study }) {
   const [requests, setRequests] = useState([]);
-  const [userNames, setUserNames] = useState({}); // { userId: displayName }
 
   useEffect(() => {
     if (!study?.id) return;
@@ -17,7 +17,6 @@ export default function Request({ study }) {
         const result = await res.json();
         if (result.resultCode === "OK") {
           setRequests(result.data);
-          fetchUserNames(result.data.map((r) => r.user.id));
         } else {
           setRequests([]);
         }
@@ -29,27 +28,6 @@ export default function Request({ study }) {
 
     fetchRequests();
   }, [study?.id]);
-
-  const fetchUserNames = async (userIds) => {
-    const uniqueIds = [...new Set(userIds)];
-    const nameMap = {};
-
-    await Promise.all(
-      uniqueIds.map(async (id) => {
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${id}/summary`, {
-            credentials: "include",
-          });
-          const result = await res.json();
-          nameMap[id] = result.data?.displayName || "알 수 없음";
-        } catch (e) {
-          nameMap[id] = "알 수 없음";
-        }
-      })
-    );
-
-    setUserNames((prev) => ({ ...prev, ...nameMap }));
-  };
 
   const updateStatus = async (enrollment, newStatus) => {
     try {
@@ -92,7 +70,7 @@ export default function Request({ study }) {
             className="grid grid-cols-5 items-center py-2 px-3 text-sm hover:bg-gray-50"
           >
             <div>{idx + 1}</div>
-            <div>{userNames[req.user.id] || "로딩 중..."}</div>
+            <div><UserName userId={req.user.id} /></div>
             <div>{req.introduce}</div>
             <div>
               <button

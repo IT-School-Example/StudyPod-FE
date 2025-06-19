@@ -1,46 +1,24 @@
 "use client";
 
+import { useUser } from "@/context/UserContext";
 import { useState, useEffect } from "react";
 
 export default function Notice({ study }) {
-  const [userId, setUserId] = useState(null);
+  const { user } = useUser();
   const [form, setForm] = useState({
     title: "",
     content: "",
   });
 
-  // 로그인한 유저 정보 가져오기
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (!res.ok) throw new Error("사용자 정보 조회 실패");
-
-        const data = await res.json();
-        setUserId(data.id);
-      } catch (error) {
-        console.error("유저 정보 조회 에러:", error);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
-  // 입력값 처리
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 게시글 작성 요청
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!userId) {
+    if (!user.id) {
       alert("로그인이 필요합니다.");
       return;
     }
@@ -50,7 +28,7 @@ export default function Notice({ study }) {
         title: form.title,
         content: form.content,
         studyBoardCategory: "NOTICE",
-        user: { id: userId },
+        user: { id: user.id },
         studyGroup: { id: study.id },
       },
     };
@@ -108,7 +86,7 @@ export default function Notice({ study }) {
         <button
           type="submit"
           className="bg-[#4B2E1E] text-white px-6 py-3 rounded font-semibold"
-          disabled={!userId}
+          disabled={!user.id}
         >
           등록하기
         </button>

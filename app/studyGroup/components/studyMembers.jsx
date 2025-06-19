@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import ViewBoard from "@/components/board/viewBoard";
 import PostBoard from "@/components/board/postBoard";
 import { useUser } from "@/context/UserContext";
+import { getSidoName } from "@/shared/utils";
 
 export default function StudyMembers({ study }) {
   const { user } = useUser();
@@ -117,7 +118,7 @@ export default function StudyMembers({ study }) {
               )
               .join(", ")}
           </p>
-          <p><strong>지역:</strong> {study.address?.sido?.sidoNm}</p>
+          <p><strong>지역:</strong> {getSidoName(study.sido.sidoCd)}</p>
           <p><strong>정원:</strong> {study.maxMembers}</p>
           <p><strong>참가비:</strong> {study.amount ? `${study.amount.toLocaleString()}원` : "무료"}</p>
         </div>
