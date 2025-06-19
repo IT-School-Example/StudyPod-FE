@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/context/UserContext";
 
 export default function Info() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const {user} = useUser();
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -14,27 +15,6 @@ export default function Info() {
     code: "",
   });
   const [codeVerified, setCodeVerified] = useState(false);
-
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error("회원 정보를 불러올 수 없습니다");
-
-        const data = await res.json();
-        setUser(data);
-        setFormData({ email: data.email, nickname: data.nickname || "", password: "", code: "" });
-      } catch (err) {
-        console.error(err);
-        alert("로그인 상태가 만료되었거나 유효하지 않습니다.");
-        router.push("/login");
-      }
-    };
-    fetchUserInfo();
-  }, [router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
