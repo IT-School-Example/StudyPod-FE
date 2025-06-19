@@ -226,7 +226,7 @@ export default function ViewBoard({ posts, setPosts }) {
           ) : (
             <>
               <h3 className="font-bold text-xl mb-2">
-                [{categoryMap[post.studyBoardCategory] || post.studyBoardCategory}] {post.title}
+                [{categoryMap[post.studyBoardCategory || post.adminBoardCategory]}] {post.title}
               </h3>
               <div className="text-sm text-gray-600 mb-1">
                 {formatDateTime(post.createdAt)} | 작성자: <UserName userId={post.user?.id} />
@@ -322,7 +322,7 @@ export default function ViewBoard({ posts, setPosts }) {
           className="p-4 border rounded shadow-sm hover:bg-gray-50 cursor-pointer"
         >
           <div className="text-sm text-gray-600 mb-1">
-            [{categoryMap[post.studyBoardCategory] || post.studyBoardCategory}]{" "}
+            [{categoryMap[post.studyBoardCategory || post.adminBoardCategory]}]{" "}
             {formatDateTime(post.createdAt)} | 작성자: <UserName userId={post.user?.id} />
           </div>
           <h3 className="font-bold text-lg mb-1">{post.title}</h3>
