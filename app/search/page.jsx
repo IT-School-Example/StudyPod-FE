@@ -3,46 +3,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import StudyCard from "@/components/card/studyCard";
-
-const subjectOptions = [
-  { id: 1, value: "LANGUAGE" },
-  { id: 2, value: "IT" },
-  { id: 3, value: "EXAM" },
-  { id: 4, value: "JOB" },
-  { id: 5, value: "SCHOOL" },
-  { id: 6, value: "HOBBY" },
-  { id: 7, value: "CULTURE" },
-  { id: 8, value: "SCIENCE" },
-  { id: 9, value: "HUMANITIES" },
-  { id: 10, value: "BUSINESS" },
-  { id: 11, value: "ETC" }
-];
-
-const meetingOptions = [
-  { value: "ONLINE", label: "온라인" },
-  { value: "OFFLINE", label: "오프라인" },
-  { value: "BOTH", label: "혼합" },
-];
-
-const sidoOptions = [
-  { sidoCd: "11", sidoNm: "서울특별시" },
-  { sidoCd: "26", sidoNm: "부산광역시" },
-  { sidoCd: "27", sidoNm: "대구광역시" },
-  { sidoCd: "28", sidoNm: "인천광역시" },
-  { sidoCd: "29", sidoNm: "광주광역시" },
-  { sidoCd: "30", sidoNm: "대전광역시" },
-  { sidoCd: "31", sidoNm: "울산광역시" },
-  { sidoCd: "36", sidoNm: "세종특별자치시" },
-  { sidoCd: "41", sidoNm: "경기도" },
-  { sidoCd: "43", sidoNm: "충청북도" },
-  { sidoCd: "44", sidoNm: "충청남도" },
-  { sidoCd: "46", sidoNm: "전라남도" },
-  { sidoCd: "47", sidoNm: "경상북도" },
-  { sidoCd: "48", sidoNm: "경상남도" },
-  { sidoCd: "50", sidoNm: "제주특별자치도" },
-  { sidoCd: "51", sidoNm: "강원특별자치도" },
-  { sidoCd: "52", sidoNm: "전북특별자치도" },
-];
+import { subjectOptions, meetingOptions, sidoOptions } from "@/shared/constants";
 
 export default function Search() {
   const [query, setQuery] = useState("");
@@ -94,7 +55,6 @@ export default function Search() {
       console.error("스터디 필터 API 오류:", err);
     }
   };
-
 
   return (
     <div className="w-full h-full flex flex-col bg-white px-24 text-black">
