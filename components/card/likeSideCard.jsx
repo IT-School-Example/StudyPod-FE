@@ -1,29 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { FaHeart } from "react-icons/fa6";
+import UserName from "@/components/UserName";
 
+/**
+ * 마이페이지 > 관심 스터디 카드
+ * @param {string} tag - 스터디 키워드 중 첫 번째
+ * @param {string} content - 스터디 제목
+ * @param {number|string} leader - 리더 유저 ID
+ * @param {number} detail - 스터디 ID
+ * @param {string} url - 상세 페이지로 이동할 때 붙일 URL 쿼리
+ */
 export default function LikeSideCard({ tag, content, leader, detail, url }) {
-  const [leaderName, setLeaderName] = useState("로딩 중...");
-
-  useEffect(() => {
-    const fetchDisplayName = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${leader}/summary`, {
-          credentials: "include",
-        });
-        const data = await res.json();
-        setLeaderName(data.data.displayName);
-      } catch (err) {
-        console.error("리더 이름 조회 실패:", err);
-        setLeaderName("알 수 없음");
-      }
-    };
-
-    if (leader) fetchDisplayName();
-  }, [leader]);
-
   return (
     <Link href={`/studyGroup/${detail}${url ?? ""}`}>
       <div className="p-4 w-full border-2 border-black rounded-xl hover:border-blue-300 hover:scale-105 transition">
@@ -34,7 +23,7 @@ export default function LikeSideCard({ tag, content, leader, detail, url }) {
           <h2 className="font-bold text-lg text-black">{content}</h2>
         </div>
         <div className="border-t border-gray-300 pt-2 flex justify-between items-center text-sm text-black">
-          <span>리더: {leaderName}</span>
+          <UserName userId={leader} />
           <span className="flex items-center gap-1">
             <FaHeart className="text-red-500" />
           </span>
