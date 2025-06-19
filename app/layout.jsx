@@ -1,6 +1,7 @@
 import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
-import { UserProvider } from "@/context/UserContext"; // ✅ 추가
+import Providers from "./providers"; 
+import { UserProvider } from "@/app/context/UserContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -21,9 +22,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${inter.variable} ${robotoMono.variable} antialiased`}>
-        <UserProvider>
-          {children}
-        </UserProvider>
+        <Providers>
+          <UserProvider>{children}</UserProvider>
+        </Providers>
       </body>
     </html>
   );
