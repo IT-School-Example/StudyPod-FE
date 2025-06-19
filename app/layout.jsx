@@ -1,7 +1,7 @@
 import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers"; 
-import { UserProvider } from "@/app/context/UserContext";
+import { UserProvider } from "@/context/UserContext";
 
 const inter = Inter({
   variable: "--font-inter",
