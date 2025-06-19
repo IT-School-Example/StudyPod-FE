@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import ViewBoard from "@/app/components/viewBoard";
-import PostBoard from "@/app/components/postBoard";
+import ViewBoard from "@/app/components/board/viewBoard";
+import PostBoard from "@/app/components/board/postBoard";
+import { useUser } from "@/app/context/UserContext";
 
 export default function StudyMembers({ study }) {
-  const [userId, setUserId] = useState(null);
+  const { user } = useUser();
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   const [tab, setTab] = useState("info");
@@ -16,27 +17,12 @@ export default function StudyMembers({ study }) {
   const [selectedPost, setSelectedPost] = useState(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error("인증된 사용자 정보 불러오기 실패");
-        const data = await res.json();
-        setUserId(data.id);
+    if (!user || !study) return;
 
-        const isLeader = study.leader?.id === data.id;
-        const isMember = study.members?.some((m) => m.id === data.id);
-        setIsAuthorized(isLeader || isMember);
-      } catch (err) {
-        console.error("인증 오류:", err);
-        setIsAuthorized(false);
-      }
-    };
-
-    fetchUser();
-  }, [study]);
+    const isLeader = study.leader?.id === user.id;
+    const isMember = study.members?.some((m) => m.id === user.id);
+    setIsAuthorized(isLeader || isMember);
+  }, [user, study]);
 
   useEffect(() => {
     const fetchPosts = async () => {
