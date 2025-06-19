@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useUser } from "@/app/context/UserContext";
 import Board from "./(manage)/board";
 import Member from "./(manage)/member";
 import Notice from "./(manage)/notice";
@@ -9,7 +10,7 @@ import Request from "./(manage)/request";
 import Info from "./(manage)/info";
 
 export default function Manage({ study }) {
-  const [userId, setUserId] = useState(null);
+  const { user } = useUser(); 
   const [isLeader, setIsLeader] = useState(false);
   const [tab, setTab] = useState("info");
 
@@ -23,27 +24,11 @@ export default function Manage({ study }) {
   ];
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error("유저 정보 조회 실패");
-        const user = await res.json();
-        setUserId(user.id);
+    if (!user || !study) return;
 
-        // 리더 권한 확인
-        const isLeaderUser = study.leader?.id === user.id;
-        setIsLeader(isLeaderUser);
-      } catch (err) {
-        console.error("사용자 인증 오류:", err);
-        setIsLeader(false);
-      }
-    };
-
-    fetchUser();
-  }, [study]);
+    const isLeaderUser = study.leader?.id === user.id;
+    setIsLeader(isLeaderUser);
+  }, [user, study]);
 
   if (!isLeader) {
     return <p className="text-red-500">리더만 접근할 수 있습니다.</p>;

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useUser } from "@/app/context/UserContext";
+import UserName from "@/app/components/UserName";
 
 const categoryMap = {
   NOTICE: "공지",
@@ -19,66 +21,14 @@ const formatDateTime = (isoString) => {
 };
 
 export default function ViewBoard({ posts, setPosts }) {
+  const { user } = useUser();
+  const currentUserId = user?.id;
+
   const [commentInputs, setCommentInputs] = useState({});
   const [editInputs, setEditInputs] = useState({});
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [selectedPost, setSelectedPost] = useState(null);
   const [editingPost, setEditingPost] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState(null);
-  const [displayNames, setDisplayNames] = useState({});
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error("유저 정보 조회 실패");
-        const data = await res.json();
-        setCurrentUserId(data.id);
-      } catch (err) {
-        console.error("현재 유저 정보 오류:", err);
-      }
-    };
-    fetchCurrentUser();
-  }, []);
-
-  useEffect(() => {
-    const fetchNames = async () => {
-      const ids = posts.map((p) => p.user?.id).filter(Boolean);
-      const uniqueIds = [...new Set(ids)];
-
-      const results = await Promise.allSettled(
-        uniqueIds.map((id) =>
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${id}/summary`, {
-            method: "GET",
-            credentials: "include",
-          }).then((res) => res.json())
-        )
-      );
-
-      const nameMap = {};
-      results.forEach((result, idx) => {
-        if (result.status === "fulfilled") {
-          const id = uniqueIds[idx];
-          nameMap[id] = result.value?.data?.displayName || "이름없음";
-        }
-      });
-
-      setDisplayNames(nameMap);
-    };
-
-    if (posts.length > 0) fetchNames();
-  }, [posts]);
-
-  const handleCommentChange = (postId, value) => {
-    setCommentInputs((prev) => ({ ...prev, [postId]: value }));
-  };
-
-  const handleEditChange = (commentId, value) => {
-    setEditInputs((prev) => ({ ...prev, [commentId]: value }));
-  };
 
   const fetchComments = async (postId) => {
     try {
@@ -123,13 +73,15 @@ export default function ViewBoard({ posts, setPosts }) {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({data:{
-          title: selectedPost.title,
-          content: selectedPost.content,
-          studyBoardCategory: selectedPost.studyBoardCategory,
-          studyGroup: { id: selectedPost.studyGroup.id },
-          user: { id: currentUserId },
-        }}),
+        body: JSON.stringify({
+          data: {
+            title: selectedPost.title,
+            content: selectedPost.content,
+            studyBoardCategory: selectedPost.studyBoardCategory,
+            studyGroup: { id: selectedPost.studyGroup.id },
+            user: { id: currentUserId },
+          },
+        }),
       });
       if (!res.ok) throw new Error("수정 실패");
       const updated = (await res.json()).data;
@@ -218,9 +170,18 @@ export default function ViewBoard({ posts, setPosts }) {
     }
   };
 
+  const handleCommentChange = (postId, value) => {
+    setCommentInputs((prev) => ({ ...prev, [postId]: value }));
+  };
+
+  const handleEditChange = (commentId, value) => {
+    setEditInputs((prev) => ({ ...prev, [commentId]: value }));
+  };
+
   if (selectedPost) {
     const post = selectedPost;
     const isPostOwner = post.user?.id === currentUserId;
+
     return (
       <div>
         <button
@@ -268,7 +229,7 @@ export default function ViewBoard({ posts, setPosts }) {
                 [{categoryMap[post.studyBoardCategory] || post.studyBoardCategory}] {post.title}
               </h3>
               <div className="text-sm text-gray-600 mb-1">
-                {formatDateTime(post.createdAt)} | 작성자: {displayNames[post.user?.id] || "알 수 없음"}
+                {formatDateTime(post.createdAt)} | 작성자: <UserName userId={post.user?.id} />
               </div>
               <hr className="mb-4" />
               <p className="whitespace-pre-wrap mb-4">{post.content}</p>
@@ -297,11 +258,11 @@ export default function ViewBoard({ posts, setPosts }) {
           <div className="mt-6 p-4 border rounded bg-white shadow-sm">
             <h4 className="font-semibold mb-3">💬 댓글</h4>
             <div className="space-y-3">
-              {post.comments?.map((c, index) => (
+              {post.comments?.map((c) => (
                 <div key={c.id} className="p-3 bg-gray-50 rounded shadow-sm border">
                   <div className="flex justify-between items-center">
                     <p className="text-sm font-semibold text-gray-700">
-                      {displayNames[c.user?.id] || "익명"}
+                      <UserName userId={c.user?.id} />
                     </p>
                     {c.user?.id === currentUserId && (
                       <span className="space-x-2 text-xs text-gray-500">
@@ -361,7 +322,8 @@ export default function ViewBoard({ posts, setPosts }) {
           className="p-4 border rounded shadow-sm hover:bg-gray-50 cursor-pointer"
         >
           <div className="text-sm text-gray-600 mb-1">
-            [{categoryMap[post.studyBoardCategory] || post.studyBoardCategory}] {formatDateTime(post.createdAt)} | 작성자: {displayNames[post.user?.id] || "알 수 없음"}
+            [{categoryMap[post.studyBoardCategory] || post.studyBoardCategory}]{" "}
+            {formatDateTime(post.createdAt)} | 작성자: <UserName userId={post.user?.id} />
           </div>
           <h3 className="font-bold text-lg mb-1">{post.title}</h3>
         </div>

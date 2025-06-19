@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { FaHeart } from "react-icons/fa6";
 import { useEffect, useState } from "react";
+import { useUser } from "@/app/context/UserContext";
+import UserName from "@/app/components/UserName";
 
 export default function StudyCard({
   tag,
@@ -14,40 +16,15 @@ export default function StudyCard({
 }) {
   const [liked, setLiked] = useState(initiallyLiked);
   const [interestedId, setInterestedId] = useState(null);
-  const [leaderName, setLeaderName] = useState("로딩 중...");
-
-  useEffect(() => {
-    const fetchDisplayName = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/${leader}/summary`, {
-          credentials: "include",
-        });
-        const data = await res.json();
-        setLeaderName(data.data.displayName);
-      } catch (err) {
-        console.error("리더 이름 조회 실패:", err);
-        setLeaderName("알 수 없음");
-      }
-    };
-
-    if (leader) fetchDisplayName();
-  }, [leader]);
+  const { user } = useUser();
 
   useEffect(() => {
     if (!initiallyLiked) return;
 
     const fetchInterestedId = async () => {
       try {
-        const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (!userRes.ok) return;
-        const user = await userRes.json();
-
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/interested-studies/user/${user.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/interested-studies/user/${user?.id}`,
           {
             method: "GET",
             credentials: "include",
@@ -74,19 +51,6 @@ export default function StudyCard({
     e.preventDefault();
 
     try {
-      const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!userRes.ok) {
-        alert("로그인이 필요합니다.");
-        return;
-      }
-
-      const user = await userRes.json();
-      const userId = user.id;
-
       if (!liked) {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/interested-studies`, {
           method: "POST",
@@ -97,7 +61,7 @@ export default function StudyCard({
           credentials: "include",
           body: JSON.stringify({
             data: {
-              user: { id: userId },
+              user: { id: user.id },
               studyGroup: { id: detail },
             },
           }),
@@ -151,7 +115,9 @@ export default function StudyCard({
         <div>
           <div className="bg-black h-0.5 mb-2" />
           <div className="flex flex-row justify-between text-black font-bold">
-            <h1 className="py-2">{leaderName}</h1>
+            <h1 className="py-2">
+              <UserName userId={leader} />
+            </h1>
             <button
               onClick={handleLike}
               className="flex flex-row items-center space-x-1 justify-center bg-gray-300 px-4 py-2 rounded-xl hover:bg-pink-200"

@@ -1,41 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
 
 export default function Enrollment({ study }) {
+  const { user } = useUser();
+  const [introduce, setIntroduce] = useState("");
+  const router = useRouter();
 
   if (!study) {
     return <p className="text-red-500">스터디 정보를 불러오는 중입니다...</p>;
   }
 
-  const [introduce, setIntroduce] = useState("");
-  const [userId, setUserId] = useState(null);
-  const router = useRouter();
-
-  // 사용자 정보 가져오기
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error("회원 정보를 불러올 수 없습니다.");
-        const data = await res.json();
-        setUserId(data.id);
-      } catch (err) {
-        console.error(err);
-        alert("로그인이 필요합니다.");
-        router.push("/login");
-      }
-    };
-    fetchUser();
-  }, [router]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!userId || !study?.id) {
+
+    if (!user?.id || !study?.id) {
       alert("유저 또는 스터디 정보를 불러오지 못했습니다.");
       return;
     }
@@ -44,7 +25,7 @@ export default function Enrollment({ study }) {
       introduce,
       status: "PENDING",
       studyGroup: { id: study.id },
-      user: { id: userId },
+      user: { id: user.id },
     };
 
     try {

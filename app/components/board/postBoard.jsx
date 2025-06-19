@@ -1,5 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
+import { useUser } from "@/app/context/UserContext";
 
 const categoryMap = {
   free: "자유",
@@ -11,29 +13,9 @@ export default function PostBoard({ onPostSubmit, studyDetail }) {
     content: "",
     category: "free",
   });
-  const [userId, setUserId] = useState(null);
 
-  // 사용자 정보 불러오기
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (!res.ok) throw new Error("사용자 정보 조회 실패");
-
-        const data = await res.json();
-        setUserId(data.id);
-      } catch (err) {
-        console.error("유저 정보 가져오기 실패:", err);
-        alert("로그인이 필요합니다.");
-      }
-    };
-
-    fetchUser();
-  }, []);
+  const { user } = useUser();
+  const userId = user?.id;
 
   const handleSubmit = async () => {
     if (!form.title.trim() || !form.content.trim()) return;
@@ -46,7 +28,7 @@ export default function PostBoard({ onPostSubmit, studyDetail }) {
       data: {
         title: form.title,
         content: form.content,
-        studyBoardCategory: "FREE", // 서버는 대문자 FREE 요구
+        studyBoardCategory: "FREE", 
         user: { id: userId },
         studyGroup: { id: studyDetail },
       },
@@ -68,10 +50,8 @@ export default function PostBoard({ onPostSubmit, studyDetail }) {
       const response = await res.json();
       alert("게시글이 성공적으로 등록되었습니다.");
 
-      // 등록한 글을 부모에 전달
       onPostSubmit(response.data);
 
-      // 폼 초기화
       setForm({ title: "", content: "", category: "free" });
     } catch (err) {
       console.error(err);
