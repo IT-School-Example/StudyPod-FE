@@ -11,6 +11,8 @@
     "build-start": "npm run build && npm start"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.80.7",
+    "@tanstack/react-query-devtools": "^5.80.7",
     "next": "14.2.26",
     "react": "18.2.0",
     "react-dom": "18.2.0",
