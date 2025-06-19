@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/app/context/UserContext";
 import ScrollButton from "@/app/components/common/ScrollButton";
 import { useDraggableScroll } from "@/app/hooks/useDraggableScroll";
 import Navbar from "@/app/components/Navbar";
@@ -119,7 +119,7 @@ export default function Home() {
       </div>
 
       {user && leaderStudies.length > 0 && (
-        <section className="py-10 relative">
+        <section className="py-10 mt-10 relative">
           <div className="flex justify-between items-center">
             <h1 className="font-bold text-4xl text-black">관리 스터디</h1>
             <Link href="/mypage/manage" className="text-sm text-gray-500">전체 보기</Link>
@@ -127,7 +127,7 @@ export default function Home() {
           <ScrollButton direction="left" onClick={() => leaderScrollRef.current.scrollLeft -= 300} />
           <ScrollButton direction="right" onClick={() => leaderScrollRef.current.scrollLeft += 300} />
           <div ref={leaderScrollRef} className="overflow-hidden cursor-grab select-none">
-            <div className="flex gap-4 flex-nowrap min-h-[360px] items-start py-4">
+            <div className="flex gap-4 flex-nowrap items-start py-4">
               {leaderStudies.map((item) => (
                 <StudyCard
                   key={item.id}
@@ -145,7 +145,7 @@ export default function Home() {
       )}
 
       {user && mergedMyStudies.length > 0 && (
-        <section className="py-10 relative">
+        <section className="py-10 mt-10 relative">
           <div className="flex justify-between items-center">
             <h1 className="font-bold text-4xl text-black">소속 스터디</h1>
             <Link href="/mypage/belong" className="text-sm text-gray-500">전체 보기</Link>
@@ -153,7 +153,7 @@ export default function Home() {
           <ScrollButton direction="left" onClick={() => myScrollRef.current.scrollLeft -= 300} />
           <ScrollButton direction="right" onClick={() => myScrollRef.current.scrollLeft += 300} />
           <div ref={myScrollRef} className="overflow-hidden cursor-grab select-none">
-            <div className="flex gap-4 flex-nowrap min-h-[360px] items-start py-4">
+            <div className="flex gap-4 flex-nowrap items-start py-4">
               {mergedMyStudies.map((item) => (
                 <StudyCard
                   key={item.id}
@@ -170,7 +170,7 @@ export default function Home() {
         </section>
       )}
 
-      <section className="py-10">
+      <section className="py-10 mt-10 relative">
         <h1 className="font-bold text-4xl text-black">추천 스터디 그룹</h1>
         <div className="flex flex-wrap gap-6 mt-5">
           {recommendedGroups.map((item) => (
