@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Navbar from "@/components/Navbar";
 import ChatRoomList from "@/components/chat/chatRoomList";
 import ChatRoom from "@/components/chat/chatRoom";
-import ModalButton from "@/components/modal/modalButton";
+import ModalButton from "@/components/chat/modalButton";
 import { useUser } from "@/context/UserContext";
 
-export default function Chat() {
+export default function ChatApp() {
   const { user } = useUser();
   const [rooms, setRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
