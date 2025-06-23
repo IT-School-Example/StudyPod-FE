@@ -117,7 +117,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
 
   // 웹소켓 연결 및 구독
   return (
-    <body
+    <div
       style={{
         fontFamily: "Nanum Gothic",
         backgroundColor: "#deb887",
@@ -205,6 +205,6 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
           전송
         </button>
       </div>
-    </body>
+    </div>
   );
 }

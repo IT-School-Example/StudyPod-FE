@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import ChatRoomList from "@/components/chat/chatRoomList";
 import ChatRoom from "@/components/chat/chatRoom";
-import ChatIconModal from "@/components/chat/chatIconModal";
 import { useUser } from "@/context/UserContext";
 
 export default function ChatApp() {
@@ -12,11 +11,10 @@ export default function ChatApp() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 채팅방 불러오기
   const fetchChatRooms = async () => {
     if (!user?.id) return;
-
     setLoading(true);
+
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/chat-rooms/list/${user.id}`,
@@ -54,12 +52,8 @@ export default function ChatApp() {
   }, [user?.id]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-white px-24 text-black">
-      <div className="flex justify-between items-center mb-6 mt-6">
-        <ChatIconModal />
-      </div>
-
-      <div className="flex flex-row gap-8">
+    <div className="w-full h-full flex flex-col bg-white px-6 text-black">
+      <div className="flex flex-row gap-6">
         <div className="w-1/3">
           {loading ? (
             <p className="text-gray-500">채팅방 목록 불러오는 중...</p>
