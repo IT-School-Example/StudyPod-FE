@@ -3,35 +3,42 @@
 import React, { useState, useEffect, useMemo } from "react";
 import ChatRoomList from "./chatRoomList";
 import ChatRoom from "./chatRoom";
-import ModalButton from "@/app/components/modalButton";
+import ModalButton from "@/components/modalButton";
+import { useUser } from "@/context/UserContext";
 
 export default function Chat() {
   // 여러 방 리스트
   const [rooms, setRooms] = useState([]);
+  const {user} = useUser();
 
   const [currentRoomId, setCurrentRoomId] = useState(null);
   // const [isStudyGroup, setIsStudyGroup] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat-rooms/list`)
-      .then((res) => res.json())
-      .then((result) => {
-        if (result && result.data) {
-          setRooms(result.data);
-        } else {
-          setRooms([]);
-          alert("채팅방 목록이 없습니다.");
-        }
+    if (!user?.id) return;
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat-rooms/list/${user.id}`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("인증 실패");
+        return res.json();
       })
-      .catch(() => {
-        alert("채팅방 목록 불러오기 실패");
-        setRooms([]);
+      .then((result) => {
+        setRooms(result.data || []);
+      })
+      .catch((err) => {
+        console.error("채팅방 로딩 실패:", err);
+        alert("채팅방 목록을 불러오지 못했습니다.");
       })
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [user?.id]);
+
+
 
   // 마지막 메시지 시간 내림차순 정렬
   const filteredRooms = useMemo(() => {
