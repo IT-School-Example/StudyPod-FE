@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import ChatApp from "../(pages)/chat/page";
+import ChatApp from "@/app/chat/page";
 import Modal from "./modal/modal";
 import { useRouter } from "next/navigation";
 
