@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import ChatApp from "@/app/chat/page";
-import Modal from "./modal/modal";
+import Modal from "./modal";
 import { useRouter } from "next/navigation";
 
 export default function ModalButton() {
