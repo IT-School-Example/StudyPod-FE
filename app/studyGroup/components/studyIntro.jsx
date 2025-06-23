@@ -67,7 +67,7 @@ export default function StudyIntro({ study }) {
         </div>
 
         <div>인원</div>
-        <div className="font-semibold">{study.maxMembers}명</div>
+        <div className="font-semibold">{study.maxMembers ? `${study.maxMembers.toLocaleString()}명` : "미정"}</div>
 
         <div>참가비</div>
         <div className="font-semibold">

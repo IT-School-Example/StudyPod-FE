@@ -94,49 +94,51 @@ export default function Introduce({ study }) {
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mt-10 mb-6">
-        <h1 className="text-2xl font-bold">스터디 소개글</h1>
-        {introduceId && (
-          <button onClick={handleTogglePosted} className="text-2xl">
-            {posted ? (
-              <FaToggleOn className="text-green-500" />
-            ) : (
-              <FaToggleOff className="text-gray-400" />
-            )}
-          </button>
-        )}
-      </div>
-
-      {editMode ? (
-        <textarea
-          value={introduce}
-          onChange={(e) => setIntroduce(e.target.value)}
-          className="border rounded-md p-2 w-full h-48"
-        />
-      ) : (
-        <div className="whitespace-pre-wrap border rounded-md p-4 bg-gray-50">
-          {introduce}
-        </div>
+  <div>
+    <div className="flex items-center justify-between mt-10 mb-6">
+      <h1 className="text-2xl font-bold">스터디 소개글</h1>
+      {(introduceId || editMode) && (
+        <button
+          onClick={handleTogglePosted}
+          className={`px-4 py-2 rounded ${
+            posted ? "bg-green-500 text-white" : "bg-gray-400 text-white"
+          }`}
+        >
+          {posted ? "게시 중" : "게시 안함"}
+        </button>
       )}
-
-      <div className="mt-4 space-x-2">
-        {editMode ? (
-          <button
-            onClick={handleSave}
-            className="bg-[#4B2E1E] text-white px-4 py-2 rounded hover:bg-[#3e2619]"
-          >
-            {isNew ? "작성하기" : "저장"}
-          </button>
-        ) : (
-          <button
-            onClick={() => setEditMode(true)}
-            className="bg-[#4B2E1E] text-white px-4 py-2 rounded hover:bg-[#3e2619]"
-          >
-            수정하기
-          </button>
-        )}
-      </div>
     </div>
-  );
+
+    {editMode ? (
+      <textarea
+        value={introduce}
+        onChange={(e) => setIntroduce(e.target.value)}
+        className="border rounded-md p-2 w-full h-48"
+      />
+    ) : (
+      <div className="whitespace-pre-wrap border rounded-md p-4 bg-gray-50">
+        {introduce}
+      </div>
+    )}
+
+    <div className="mt-4 space-x-2">
+      {editMode ? (
+        <button
+          onClick={handleSave}
+          className="bg-[#4B2E1E] text-white px-4 py-2 rounded hover:bg-[#3e2619]"
+        >
+          {isNew ? "작성하기" : "저장"}
+        </button>
+      ) : (
+        <button
+          onClick={() => setEditMode(true)}
+          className="bg-[#4B2E1E] text-white px-4 py-2 rounded hover:bg-[#3e2619]"
+        >
+          수정하기
+        </button>
+      )}
+    </div>
+  </div>
+);
+
 }

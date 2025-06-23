@@ -105,8 +105,6 @@ export default function Info() {
 
       if (!res.ok) throw new Error("회원 탈퇴 실패");
 
-      localStorage.removeItem("currentUser");
-
       alert("탈퇴가 완료되었습니다.");
       router.push("/");
     } catch (err) {

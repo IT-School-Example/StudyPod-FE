@@ -61,7 +61,7 @@ export default function SignUp() {
       if (!response.ok) throw new Error("회원가입 실패");
 
       alert("회원가입이 완료되었습니다.");
-      router.push("/login");
+      router.push("/");
     } catch (error) {
       console.error("회원가입 오류:", error);
       alert("회원가입 중 문제가 발생했습니다.");
@@ -90,14 +90,22 @@ export default function SignUp() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code }),
       });
-      if (!res.ok) throw new Error("인증 실패");
+
+      const data = await res.json();
+
+      if (!data.success) {
+        alert(data.message || "인증에 실패했습니다.");
+        return;
+      }
+
       dispatch({ type: "SET_VERIFIED" });
       alert("인증이 완료되었습니다.");
     } catch (err) {
       console.error(err);
-      alert("인증코드가 일치하지 않습니다.");
+      alert("인증 중 오류가 발생했습니다.");
     }
   };
+
 
   return (
     <div className="flex flex-row justify-between">
