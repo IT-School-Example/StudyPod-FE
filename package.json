@@ -11,11 +11,8 @@
     "build-start": "npm run build && npm start"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@tanstack/react-query": "^5.80.7",
-=======
     "@stomp/stompjs": "^7.1.1",
->>>>>>> lyn
     "next": "14.2.26",
     "react": "18.2.0",
     "react-dom": "18.2.0",

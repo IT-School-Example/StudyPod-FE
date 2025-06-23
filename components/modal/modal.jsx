@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import ChatApp from "../../(pages)/chat/page";
+import ChatApp from "@/app/chat/page";
 
 export default function Modal({ title, onClose, childeren }) {
   // 모달 내부 클릭 시 모달 꺼짐 방지
