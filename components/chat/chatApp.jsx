@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import ChatRoomList from "@/components/chat/chatRoomList";
 import ChatRoom from "@/components/chat/chatRoom";
-import ModalButton from "@/components/chat/modalButton";
+import ChatIconModal from "@/components/chat/chatIconModal";
 import { useUser } from "@/context/UserContext";
 
 export default function ChatApp() {
@@ -56,8 +56,7 @@ export default function ChatApp() {
   return (
     <div className="w-full h-full flex flex-col bg-white px-24 text-black">
       <div className="flex justify-between items-center mb-6 mt-6">
-        <h3 className="text-xl font-semibold">💬 채팅방</h3>
-        <ModalButton />
+        <ChatIconModal />
       </div>
 
       <div className="flex flex-row gap-8">
