@@ -3,8 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import ChatRoomList from "./chatRoomList";
 import ChatRoom from "./chatRoom";
-import ModalButton from "@/components/modalButton";
-import { useUser } from "@/context/UserContext";
+import ModalButton from "@/app/components/modalButton";
 
 export default function Chat() {
   // 여러 방 리스트
@@ -59,27 +58,31 @@ export default function Chat() {
   const currentRoom = rooms.find((room) => room.id === currentRoomId);
 
   return (
-    <div style={{ padding: "20px" }}>
-      {loading ? (
-        <div>채팅방 목록 불러오는 중...</div>
-      ) : (
-        <ChatRoomList
-          rooms={filteredRooms}
-          currentRoomId={currentRoomId}
-          onSelectRoom={setCurrentRoomId}
-        />
-      )}
+    <div>
+      <Navbar>
+        <div style={{ padding: "20px" }}>
+          {loading ? (
+            <div>채팅방 목록 불러오는 중...</div>
+          ) : (
+            <ChatRoomList
+              rooms={filteredRooms}
+              currentRoomId={currentRoomId}
+              onSelectRoom={setCurrentRoomId}
+            />
+          )}
 
-      <ModalButton />
+          <ModalButton />
 
-      {currentRoomId && currentRoom && (
-        <ChatRoom
-          roomId={currentRoomId}
-          chatRoomType={currentRoom.type} // 타입 넘겨줌
-          roomName={currentRoom.name}
-          onLeave={() => setCurrentRoomId(null)}
-        />
-      )}
+          {currentRoomId && currentRoom && (
+            <ChatRoom
+              roomId={currentRoomId}
+              chatRoomType={currentRoom.type} // 타입 넘겨줌
+              roomName={currentRoom.name}
+              onLeave={() => setCurrentRoomId(null)}
+            />
+          )}
+        </div>
+      </Navbar>
     </div>
   );
 }
