@@ -17,7 +17,7 @@ export const metadata = {
   icons: {
     icon: "/logo.png",
   },
-  title: "스터디팟",
+  title: "StudyPod",
   description: "스터디 그룹을 만들고 참여해보세요!",
 };
 
