@@ -40,13 +40,21 @@ export default function Info() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/mailCheck`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, code: formData.code }),
+        body: JSON.stringify({ email, code }),
       });
-      if (!res.ok) throw new Error();
-      setCodeVerified(true);
-      alert("이메일 인증 완료!");
-    } catch {
-      alert("인증코드가 일치하지 않습니다.");
+
+      const data = await res.json();
+
+      if (!data.success) {
+        alert(data.message || "인증에 실패했습니다.");
+        return;
+      }
+
+      dispatch({ type: "SET_VERIFIED" });
+      alert("인증이 완료되었습니다.");
+    } catch (err) {
+      console.error(err);
+      alert("인증 중 오류가 발생했습니다.");
     }
   };
 
@@ -142,7 +150,7 @@ export default function Info() {
                     placeholder="인증코드 입력"
                     className="border rounded px-2 py-1"
                   />
-                  <button onClick={handleVerifyCode} className="bg-blue-500 text-white px-3 py-1 rounded">확인</button>
+                  <button onClick={handleVerifyCode} className="bg-[#4B2E1E] text-white px-3 py-1 rounded">확인</button>
                 </div>
               )}
             </div>
@@ -180,7 +188,7 @@ export default function Info() {
       <div className="flex space-x-2">
         {editMode ? (
           <>
-            <button onClick={handleSave} className="flex-1 bg-blue-500 text-white py-2 rounded">저장</button>
+            <button onClick={handleSave} className="flex-1 bg-[#4B2E1E] text-white py-2 rounded">저장</button>
             <button onClick={() => setEditMode(false)} className="flex-1 bg-gray-300 py-2 rounded">취소</button>
           </>
         ) : (
