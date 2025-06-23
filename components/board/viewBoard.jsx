@@ -98,16 +98,17 @@ export default function ViewBoard({ posts, setPosts }) {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/study-boards/${postId}/comments`,
+        `${process.env.NEXT_PUBLIC_API_URL}/comments`,
         {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+          body: JSON.stringify({data:{
             content: comment,
+            // studyGroup: { id: selectedPost.studyGroup.id },
             studyBoard: { id: postId },
             user: { id: currentUserId },
-          }),
+          }}),
         }
       );
       if (!res.ok) throw new Error("댓글 작성 실패");
@@ -234,7 +235,7 @@ export default function ViewBoard({ posts, setPosts }) {
               <hr className="mb-4" />
               <p className="whitespace-pre-wrap mb-4">{post.content}</p>
 
-              {isPostOwner && (
+              { post.studyBoardCategory === "FREE" && isPostOwner && (
                 <div className="text-right text-sm space-x-2">
                   <button
                     onClick={() => setEditingPost(true)}
