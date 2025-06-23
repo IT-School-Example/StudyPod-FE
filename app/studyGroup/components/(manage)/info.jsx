@@ -153,11 +153,11 @@ export default function Info({ study }) {
         <>
           <div><strong>제목:</strong> {form.title}</div>
           <div><strong>설명:</strong> {form.description}</div>
-          <div><strong>정원:</strong> {form.maxMembers}</div>
+          <div><strong>정원:</strong> {form.maxMembers ? `${form.maxMembers.toLocaleString()}명` : "미정" }</div>
           <div><strong>방식:</strong> {form.meetingMethod}</div>
           <div><strong>모집 상태:</strong> {form.recruitmentStatus}</div>
           <div><strong>참가비 유형:</strong> {form.feeType}</div>
-          <div><strong>금액:</strong> {form.amount}</div>
+          <div><strong>금액:</strong> {form.amount ? `${form.amount.toLocaleString()}원` : "무료" }</div>
 
           <div className="flex space-x-4 mt-4">
             <button
