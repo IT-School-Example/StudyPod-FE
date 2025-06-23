@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Info({ study }) {
   const [isEditing, setIsEditing] = useState(false);
+  const router = useRouter();
 
   const [form, setForm] = useState({
     title: "",
@@ -106,6 +108,26 @@ export default function Info({ study }) {
     setIsEditing(false);
   };
 
+  const handleDelete = async () => {
+    const confirmDelete = confirm("정말로 스터디를 삭제하시겠습니까?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/study-groups/${study.id}`, {
+        method : "DELETE",
+        credentials: "include",
+      });
+
+      if(!res.ok) throw new Error("스터디 삭제 실패");
+
+      alert("스터디 삭제가 완료되었습니다.");
+      router.push("/");
+    } catch (err) {
+      console.error(err);
+      alert("스터디 삭제 중 오류가 발생했습니다.")
+    }
+  }
+
   return (
     <div className="p-6">
       {isEditing ? (
@@ -137,12 +159,21 @@ export default function Info({ study }) {
           <div><strong>참가비 유형:</strong> {form.feeType}</div>
           <div><strong>금액:</strong> {form.amount}</div>
 
-          <button
-            onClick={() => setIsEditing(true)}
-            className="bg-[#4B2E1E] text-white px-4 py-2 rounded-md mt-4"
-          >
-            수정하기
-          </button>
+          <div className="flex space-x-4 mt-4">
+            <button
+              onClick={() => setIsEditing(true)}
+              className="bg-[#4B2E1E] text-white px-4 py-2 rounded-md mt-4"
+            >
+              수정하기
+            </button>
+
+            <button
+              onClick={handleDelete}
+              className="bg-red-500 text-white px-4 py-2 rounded-md mt-4"
+            >
+              삭제하기
+            </button>
+          </div>
         </>
       )}
     </div>
