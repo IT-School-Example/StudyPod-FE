@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 
@@ -9,17 +9,23 @@ export default function Enrollment({ study }) {
   const [introduce, setIntroduce] = useState("");
   const router = useRouter();
 
+  useEffect(() => {
+    if (user === null) {
+      alert("로그인이 필요한 서비스입니다.");
+      router.push("/login");
+    }
+  }, [user, router]);
+
   if (!study) {
     return <p className="text-red-500">스터디 정보를 불러오는 중입니다...</p>;
   }
 
+  if (!user) {
+    return null;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!user?.id || !study?.id) {
-      alert("유저 또는 스터디 정보를 불러오지 못했습니다.");
-      return;
-    }
 
     const payload = {
       introduce,
