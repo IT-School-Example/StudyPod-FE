@@ -3,14 +3,94 @@
 import { useEffect, useRef, useState } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
+import { useUser } from "@/context/UserContext";
+
+const styles = {
+  container: {
+    minHeight: "100vh",
+    width: "100vw",
+    boxSizing: "border-box",
+    fontFamily: "Nanum Gothic",
+    backgroundColor: "#deb887",
+    margin: 0,
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+  },
+  headerInput: {
+    width: "calc(100% - 70px)",
+    height: 40,
+    padding: "11px",
+    marginBottom: 10,
+    border: "none",
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    opacity: 0.7,
+  },
+  leaveButton: {
+    padding: "8px 16px",
+    marginLeft: 8,
+    border: "none",
+    borderRadius: 8,
+    backgroundColor: "#cd853f",
+    color: "white",
+    cursor: "pointer",
+  },
+  messageBox: {
+    height: "80vh",
+    maxHeight: 780,
+    backgroundColor: "#fff",
+    opacity: 0.7,
+    borderRadius: 10,
+    padding: 10,
+    overflowY: "auto",
+    marginBottom: 10,
+  },
+  messageInput: {
+    width: "calc(100% - 70px)",
+    padding: 11,
+    marginBottom: 10,
+    border: "none",
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    opacity: 0.7,
+  },
+  sendButton: {
+    padding: "8px 16px",
+    marginLeft: 8,
+    border: "none",
+    borderRadius: 8,
+    backgroundColor: "#cd853f",
+    color: "white",
+    cursor: "pointer",
+  },
+};
 
 export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
   const [messageText, setMessageText] = useState("");
   const [messages, setMessages] = useState([]);
+  const { user } = useUser();
 
   const stompClient = useRef(null);
   const subscription = useRef(null);
   const messageBoxRef = useRef(null);
+
+  // 메시지 표시 텍스트 생성 함수
+  const createDisplayText = (body) => {
+    console.log("message body:", body);
+    const nickname = body.sender?.nickname || "알 수 없음";
+    const time = new Date(body.createdAt).toLocaleTimeString();
+
+    switch (body.messageText) {
+      case "ENTER":
+        return `${nickname}님이 입장하셨습니다.`;
+      case "LEAVE":
+        return `${nickname}님이 퇴장하셨습니다.`;
+      case "TALK":
+      default:
+        return `${nickname}: ${body.messageText} (${time})`;
+    }
+  };
 
   // 메시지 목록이 업데이트 될 때마다 스크롤을 최하단으로 이동
   useEffect(() => {
@@ -18,6 +98,8 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
       top: messageBoxRef.current.scrollHeight,
       behavior: "smooth",
     });
+
+    console.log("message 상태:", messages);
   }, [messages]);
 
   /* const scrollToBottom = () => {
@@ -26,6 +108,11 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
 
   // 웹소켓 연결 및 구독
   useEffect(() => {
+    if (stompClient.current) {
+      console.log("이미 연결된 stompClient 존재. 중복 연결 방지.");
+      return;
+    }
+
     const socket = new SockJS("http://localhost:8080/ws");
 
     const client = new Client({
@@ -35,29 +122,25 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
         console.log("STOMP 연결 성공");
 
         // chatRoomType에 따라 구독 토픽 설정
-        const topic =
-          chatRoomType === "DIRECT"
-            ? `/topic/chat/direct/${roomID}`
-            : `/topic/chat/group/${roomId}`;
+        const topic = `/topic/chat/room/${roomId}`;
 
         // 채팅방 구독
-        subscription.current = client.subscribe(topic, (message) => {
-          const body = JSON.parse(message.body);
-          const nickname = body.sender?.nickname || "알 수 없음";
-          const time = new Date(body.createdAt).toLocaleTimeString();
-
-          let displayText = "";
-
-          if (body.messageType === "ENTER") {
-            displayText = `${nickname}님이 입장하셨습니다.`;
-          } else if (body.messageType === "LEAVE") {
-            displayText = `${nickname}님이 퇴장하셨습니다.`;
-          } else {
-            displayText = `${nickname}: ${body.messageText} (${time})`;
-          }
-
-          setMessages((prev) => [...prev, displayText]);
-        });
+        if (!subscription.current) {
+          subscription.current = client.subscribe(topic, (message) => {
+            console.log("메시지 수신 시도됨");
+            console.log("raw message.body:", message.body);
+            try {
+              console.log("raw message.body:", message.body);
+              const body = JSON.parse(message.body);
+              console.log("parsed body:", body);
+              const displayText = createDisplayText(body);
+              console.log("displayText:", displayText);
+              setMessages((prev) => [...prev, displayText]);
+            } catch (error) {
+              console.error("메시지 파싱 오류:", error);
+            }
+          });
+        }
 
         // 입장 메시지  전송
         client.publish({
@@ -65,6 +148,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
           body: JSON.stringify({
             messageType: "ENTER",
             chatRoom: { id: roomId },
+            sender: { nickname: user.nickname },
           }),
         });
 
@@ -91,17 +175,20 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
           body: JSON.stringify({
             messageType: "LEAVE",
             chatRoom: { id: roomId },
+            sender: { nickname: user.nickname },
           }),
         });
         subscription.current?.unsubscribe();
-        stompClient.current.disconnect();
+        subscription.current = null;
+        stompClient.current.deactivate();
+        stompClient.current = null;
       }
     };
-  }, [roomId, chatRoomType]);
+  }, [roomId, chatRoomType, user.nickname]);
 
-  //메시지 전송 함수수
+  //메시지 전송 함수
   const sendMessage = () => {
-    if (!messageText || !stompClient.current?.connected) return;
+    if (!messageText.trim() || !stompClient.current?.connected) return;
 
     stompClient.current.publish({
       destination: "/app/chat/message",
@@ -109,6 +196,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
         messageType: "TALK",
         chatRoom: { id: roomId },
         messageText,
+        sender: { nickname: user.nickname },
       }),
     });
     console.log("메시지 전송 요청 보냄:", messageText);
@@ -116,7 +204,9 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
   };
 
   // 웹소켓 연결 및 구독
+  //
   return (
+<<<<<<< HEAD
     <div
       style={{
         fontFamily: "Nanum Gothic",
@@ -125,83 +215,30 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
         padding: "20px",
       }}
     >
+=======
+    <div style={styles.container}>
+>>>>>>> a6f0c72 (chatRoom 오류 수정)
       <div
       //style={{ marginTop: "20px", border: "1px solid #ccc", padding: "10px" }}
       >
-        <input
-          style={{
-            width: "calc(100% - 70px)",
-            height: "40px",
-            padding: "11px",
-            marginBottom: "10px",
-            border: "none",
-            borderRadius: "8px",
-            backgroundColor: "#fff",
-            opacity: "0.7",
-          }}
-        >
-          {roomName}
-        </input>
-        <button
-          onClick={onLeave}
-          style={{
-            padding: "8px 16px",
-            marginLeft: "8px",
-            border: "none",
-            borderRadius: "8px",
-            backgroundColor: "#cd853f",
-            color: "white",
-            cursor: "pointer",
-          }}
-        >
+        <input style={styles.headerInput} value={roomName} readOnly />
+        <button style={styles.leaveButton} onClick={onLeave}>
           퇴장
         </button>
-        <div
-          ref={messageBoxRef}
-          style={{
-            height: "80vh",
-            maxHeight: "780px",
-            backgroundColor: "#fff",
-            opacity: "0.7",
-            borderRadius: "10px",
-            padding: "10px",
-            overflowY: "auto",
-            //border: "1px solid #ddd",
-            marginBottom: "10px",
-          }}
-        >
+        <div ref={messageBoxRef} style={styles.messageBox}>
           {messages.map((msg, i) => (
             <p key={i}>{msg}</p>
           ))}
         </div>
         <input
           type="text"
+          placeholder="메시지를 입력하세요"
           value={messageText}
           onChange={(e) => setMessageText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          placeholder="메시지를 입력하세요"
-          style={{
-            width: "calc(100% - 70px)",
-            padding: "11px",
-            marginBottom: "10px",
-            border: "none",
-            borderRadius: "8px",
-            backgroundColor: "#fff",
-            opacity: "0.7",
-          }}
+          style={styles.messageInput}
         />
-        <button
-          onClick={sendMessage}
-          style={{
-            padding: "8px 16px",
-            marginLeft: "8px",
-            border: "none",
-            borderRadius: "8px",
-            backgroundColor: "#cd853f",
-            color: "white",
-            cursor: "pointer",
-          }}
-        >
+        <button onClick={sendMessage} style={styles.sendButton}>
           전송
         </button>
       </div>
