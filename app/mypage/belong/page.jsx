@@ -3,6 +3,7 @@
 import { useUser } from "@/context/UserContext";
 import { useMyStudies } from "@/hooks/useMyStudies";
 import StudySideCard from "@/components/card/studySideCard";
+import { getSubjectNm } from "@/shared/utils";
 
 export default function Belong() {
   const { user } = useUser();
@@ -17,7 +18,7 @@ export default function Belong() {
             <StudySideCard
               key={group.id}
               id={group.id}
-              tag={group.keywords[0]}
+              tag={getSubjectNm(item.subjectArea?.id)}
               detail={group.title}
               isLeader={group.leader.id === user.id}
               url={`?tab=members`}

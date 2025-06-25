@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import ViewBoard from "@/components/board/viewBoard";
 import PostBoard from "@/components/board/postBoard";
 import { useUser } from "@/context/UserContext";
-import { getSidoName } from "@/shared/utils";
+import { getSidoName, getSubjectNm } from "@/shared/utils";
 
 export default function StudyMembers({ study }) {
   const { user } = useUser();
@@ -107,6 +107,7 @@ export default function StudyMembers({ study }) {
 
       {tab === "info" && (
         <div className="space-y-2 bg-gray-100 p-4 rounded">
+          <p><strong>주제:</strong> {getSubjectNm(study.subjectArea?.id)}</p>
           <p><strong>태그:</strong> {study.keywords}</p>
           <p><strong>제목:</strong> {study.title}</p>
           <p>

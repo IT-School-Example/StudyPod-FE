@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getSidoName } from "@/shared/utils";
+import { getSidoName, getSubjectNm } from "@/shared/utils";
 
 export default function StudyIntro({ study }) {
   const [introduce, setIntroduce] = useState("");
@@ -36,6 +36,9 @@ export default function StudyIntro({ study }) {
     <div className="p-10 space-y-8 text-black">
       {/* 키워드 태그 */}
       <div className="space-x-2">
+        <span className="bg-[#FBEDD7] text-sm px-3 py-1 rounded-full">
+          {getSubjectNm(study.subjectArea?.id)}
+        </span>
         {study.keywords?.map((keyword, idx) => (
           <span
             key={idx}
@@ -58,6 +61,9 @@ export default function StudyIntro({ study }) {
 
       {/* 요약 정보 */}
       <div className="grid grid-cols-2 gap-y-3 w-64">
+        <div>주제</div>
+        <div className="font-semibold">{getSubjectNm(study.subjectArea?.id)}</div>
+        
         <div>스터디 방식</div>
         <div className="font-semibold">{study.meetingMethod}</div>
 

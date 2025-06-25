@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import StudyCard from "@/components/card/studyCard";
 import { subjectOptions, meetingOptions, sidoOptions } from "@/shared/constants";
+import { getSubjectNm } from "@/shared/utils";
 import { useUser } from "@/context/UserContext";
 import { useLikedStudies } from "@/hooks/useLikedStudies";
 
@@ -144,7 +145,7 @@ export default function Search() {
             <StudyCard
               key={item.id}
               detail={item.id}
-              tag={item.keywords?.[0]}
+              tag={getSubjectNm(item.subjectArea?.id)}
               content={item.title}
               leader={item.leader?.id}
               url="?tab=intro"

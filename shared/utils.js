@@ -6,6 +6,6 @@ export const getSidoName = (sidoCd) => {
 };
 
 export const getSubjectNm = (id) => {
-  const match = sidoOptions.find((subject) => subject.id === id);
+  const match = subjectOptions.find((subject) => subject.id === id);
   return match ? match.value : "알 수 없음";
 };
