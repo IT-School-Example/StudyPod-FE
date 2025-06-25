@@ -21,7 +21,7 @@ export default function Like() {
           {likedStudies.map((study) => (
             <LikeSideCard
               key={study.id}
-              tag={getSubjectNm(item.subjectArea?.id)}
+              tag={getSubjectNm(study.subjectArea?.id)}
               content={study.title}
               leader={study.leader?.id ?? "리더"}
               detail={study.id}
