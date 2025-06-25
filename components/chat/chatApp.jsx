@@ -52,7 +52,7 @@ export default function ChatApp() {
   }, [user?.id]);
 
   return (
-    <div className="w-[400px] h-[600px] flex flex-col bg-white text-black">
+    <div className="w-full h-full flex flex-col bg-white text-black">
       {!selectedRoom ? (
         <div className="p-4 overflow-y-auto">
           {loading ? (

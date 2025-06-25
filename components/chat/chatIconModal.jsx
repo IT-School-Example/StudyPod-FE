@@ -25,27 +25,28 @@ export default function ChatIconModal() {
       </div>
 
       {/* 모달 */}
-      <div
-        className={`fixed bottom-20 right-5 w-[400px] h-[600px] bg-white border border-gray-300 rounded-lg shadow-lg z-50 flex flex-col overflow-hidden transition-all duration-300
-          ${isOpen ? "opacity-100 scale-100 visible" : "opacity-0 scale-95 invisible"}`}
-      >
-        {/* 상단 헤더 */}
-        <div className="flex justify-between items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
-          <span className="font-semibold text-gray-700">💬 채팅</span>
-          <button
-            type="button"
-            onClick={toggleModal}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <IoClose size={20} />
-          </button>
-        </div>
+      {isOpen && (
+        <div
+          className="fixed bottom-20 right-5 w-[400px] h-[600px] bg-white border border-gray-300 rounded-lg shadow-lg z-50 flex flex-col overflow-hidden transition-all duration-300"
+        >
+          {/* 상단 헤더 */}
+          <div className="flex justify-between items-center bg-gray-100 px-4 py-2 border-b border-gray-300">
+            <span className="font-semibold text-gray-700">💬 채팅</span>
+            <button
+              type="button"
+              onClick={toggleModal}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <IoClose size={20} />
+            </button>
+          </div>
 
-        {/* 콘텐츠 영역 */}
-        <div className="flex-1 overflow-hidden">
-          <ChatApp />
+          {/* 콘텐츠 영역 */}
+          <div className="flex-1 overflow-hidden">
+            <ChatApp />
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
