@@ -18,7 +18,7 @@ export default function Manage() {
             <StudySideCard
               key={group.id}
               id={group.id}
-              tag={getSubjectNm(item.subjectArea?.id)}
+              tag={getSubjectNm(group.subjectArea?.id)}
               detail={group.title}
               isLeader={true}
               url={`?tab=manage`}

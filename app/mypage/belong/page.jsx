@@ -18,7 +18,7 @@ export default function Belong() {
             <StudySideCard
               key={group.id}
               id={group.id}
-              tag={getSubjectNm(item.subjectArea?.id)}
+              tag={getSubjectNm(group.subjectArea?.id)}
               detail={group.title}
               isLeader={group.leader.id === user.id}
               url={`?tab=members`}
