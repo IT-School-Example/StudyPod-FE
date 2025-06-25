@@ -5,6 +5,7 @@ import { useUser } from "@/context/UserContext";
 import ScrollButton from "@/components/common/ScrollButton";
 import { useDraggableScroll } from "@/hooks/useDraggableScroll";
 import Navbar from "@/components/Navbar";
+import { getSubjectNm } from "@/shared/utils";
 import StudyCard from "@/components/card/studyCard";
 import { useLikedStudies } from "@/hooks/useLikedStudies";
 import { useLeaderStudies } from "@/hooks/useLeaderStudies";
@@ -89,7 +90,7 @@ export default function Home() {
                 <StudyCard
                   key={item.id}
                   detail={item.id}
-                  tag={item.keywords?.[0]}
+                  tag={getSubjectNm(item.subjectArea?.id)}
                   content={item.title}
                   leader={item.leader?.id}
                   url="?tab=manage"
@@ -117,7 +118,7 @@ export default function Home() {
                 <StudyCard
                   key={item.id}
                   detail={item.id}
-                  tag={item.keywords?.[0]}
+                  tag={getSubjectNm(item.subjectArea?.id)}
                   content={item.title}
                   leader={item.leader?.id}
                   url="?tab=members"
@@ -138,7 +139,7 @@ export default function Home() {
             <StudyCard
               key={item.id}
               detail={item.id}
-              tag={item.keywords?.[0]}
+              tag={getSubjectNm(item.subjectArea?.id)}
               content={item.title}
               leader={item.leader?.id}
               url="?tab=intro"

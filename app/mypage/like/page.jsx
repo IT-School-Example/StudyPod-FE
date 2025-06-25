@@ -3,6 +3,7 @@
 import { useUser } from "@/context/UserContext";
 import { useLikedStudies } from "@/hooks/useLikedStudies";
 import LikeSideCard from "@/components/card/likeSideCard";
+import { getSubjectNm } from "@/shared/utils";
 
 export default function Like() {
   const { user } = useUser();
@@ -20,7 +21,7 @@ export default function Like() {
           {likedStudies.map((study) => (
             <LikeSideCard
               key={study.id}
-              tag={study.keywords?.[0] ?? "태그"}
+              tag={getSubjectNm(item.subjectArea?.id)}
               content={study.title}
               leader={study.leader?.id ?? "리더"}
               detail={study.id}

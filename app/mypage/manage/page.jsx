@@ -3,6 +3,7 @@
 import { useUser } from "@/context/UserContext";
 import { useLeaderStudies } from "@/hooks/useLeaderStudies";
 import StudySideCard from "@/components/card/studySideCard";
+import { getSubjectNm } from "@/shared/utils";
 
 export default function Manage() {
   const { user } = useUser();
@@ -17,7 +18,7 @@ export default function Manage() {
             <StudySideCard
               key={group.id}
               id={group.id}
-              tag={group.keywords?.[0]}
+              tag={getSubjectNm(item.subjectArea?.id)}
               detail={group.title}
               isLeader={true}
               url={`?tab=manage`}
