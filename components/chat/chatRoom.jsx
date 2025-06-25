@@ -206,18 +206,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
   // 웹소켓 연결 및 구독
   //
   return (
-<<<<<<< HEAD
-    <div
-      style={{
-        fontFamily: "Nanum Gothic",
-        backgroundColor: "#deb887",
-        margin: 0,
-        padding: "20px",
-      }}
-    >
-=======
     <div style={styles.container}>
->>>>>>> a6f0c72 (chatRoom 오류 수정)
       <div
       //style={{ marginTop: "20px", border: "1px solid #ccc", padding: "10px" }}
       >
