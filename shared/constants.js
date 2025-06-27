@@ -18,6 +18,11 @@ export const meetingOptions = [
   { value: "BOTH", label: "혼합" }
 ];
 
+export const recruitstatus = [
+  {value : "RECRUITING", label : "모집 중"},
+  {value : "CLOSED", label : "모집 마감"}
+]
+
 export const sidoOptions = [
   { sidoCd: "11", sidoNm: "서울특별시" },
   { sidoCd: "26", sidoNm: "부산광역시" },
