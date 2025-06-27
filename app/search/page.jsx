@@ -7,6 +7,7 @@ import { subjectOptions, meetingOptions, sidoOptions } from "@/shared/constants"
 import { getSubjectNm } from "@/shared/utils";
 import { useUser } from "@/context/UserContext";
 import { useLikedStudies } from "@/hooks/useLikedStudies";
+import { IoSearch } from "react-icons/io5";
 
 export default function Search() {
   const [query, setQuery] = useState("");
@@ -20,7 +21,7 @@ export default function Search() {
 
   useEffect(() => {
     fetchFilteredStudies();
-  }, [query, region, studyTopic, studyMethods, isRecruiting]);
+  }, [region, studyTopic, studyMethods, isRecruiting]);
 
   const toggleStudyMethod = (method) => {
     setStudyMethods((prev) =>
@@ -29,35 +30,69 @@ export default function Search() {
   };
 
   const fetchFilteredStudies = async () => {
-    try {
-      const base = process.env.NEXT_PUBLIC_API_URL + "/study-groups";
+  try {
+    const base = process.env.NEXT_PUBLIC_API_URL + "/study-groups";
+
+    // ✅ 검색어 있을 경우 POST로 별도 처리
+      if (query) {
+        const res = await fetch(`${base}/search?searchStr=${encodeURIComponent(query)}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: {
+              meetingMethod: studyMethods.length > 0 ? studyMethods[0] : null, // 하나만 선택 가능하도록 가정
+              recruitmentStatus: isRecruiting ? "RECRUITING" : null,
+              subjectArea: studyTopic ? { id: Number(studyTopic) } : null,
+            },
+          }),
+        });
+        const data = await res.json();
+        setStudyData(data.data || []);
+        return;
+      }
+
       const urls = [];
 
-      if (query) urls.push(`${base}/search?keyword=${encodeURIComponent(query)}`);
-      if (studyTopic) urls.push(`${base}/filter/subject?subject=${studyTopic}`);
+      if (studyTopic) urls.push(`${base}/filter/subject?value=${studyTopic}`);
       if (region) {
         const sidoCd = sidoOptions.find((s) => s.sidoNm === region)?.sidoCd;
         if (sidoCd) urls.push(`${base}/filter/sido?sidoCd=${sidoCd}`);
       }
       studyMethods.forEach((method) => {
-        urls.push(`${base}/filter/meeting?meeting=${method}`);
+        urls.push(`${base}/filter/meeting?meetingMethod=${method}`);
       });
-      if (isRecruiting) urls.push(`${base}/filter/recruitment?status=RECRUITING`);
+      if (isRecruiting) urls.push(`${base}/filter/recruitment?recruitmentStatus=RECRUITING`);
 
       let merged = [];
 
       if (urls.length === 0) {
-        const res = await fetch(base);
+        const res = await fetch(base, { credentials: "include" });
         const data = await res.json();
         merged = data.data || [];
       } else {
-        const results = await Promise.all(urls.map((url) => fetch(url).then((res) => res.json())));
+        const results = await Promise.all(
+          urls.map((url) => fetch(url, { credentials: "include" }).then((res) => res.json()))
+        );
         merged = results.flatMap((res) => res.data || []);
       }
+
       const unique = [...new Map(merged.map((item) => [item.id, item])).values()];
       setStudyData(unique);
     } catch (err) {
       console.error("스터디 필터 API 오류:", err);
+    }
+  };
+
+
+  const handleSearch = () => {
+    fetchFilteredStudies();
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
     }
   };
 
@@ -67,13 +102,24 @@ export default function Search() {
       <h1 className="text-2xl font-bold mt-10 mb-6">스터디 검색</h1>
 
       {/* 검색창 */}
-      <input
-        type="text"
-        placeholder="스터디 이름, 키워드, 작성자 검색"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        className="border rounded-md px-4 py-2 mb-6 w-full max-w-lg"
-      />
+      <div className="relative max-w-lg w-full mb-6">
+        <input
+          type="text"
+          placeholder="검색어를 입력해주세요."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyPress}
+          className="border rounded-md px-4 py-2 mb-6 w-full max-w-lg pr-10"
+        />
+
+        {/* 오른쪽 돋보기 아이콘 */}
+        <button
+          onClick={handleSearch}
+          className="absolute top-[14px] right-3 text-gray-500 hover:text-gray-700"
+        >
+          <IoSearch size={20} />
+        </button>
+      </div>
 
       {/* 필터 */}
       <div className="flex flex-wrap gap-6 mb-6 items-center">
@@ -103,7 +149,7 @@ export default function Search() {
           >
             <option value="">-- 선택하세요 --</option>
               {subjectOptions.map(option => (
-                <option key={option.id} value={option.id}>
+                <option key={option.value} value={option.value}>
                   {option.value}
                 </option>
               ))}
