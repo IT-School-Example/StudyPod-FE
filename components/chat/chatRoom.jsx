@@ -5,6 +5,7 @@ import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { useUser } from "@/context/UserContext";
 import { IoChevronBackSharp } from "react-icons/io5";
+import UserName from "@/components/common/UserName";
 
 export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
   const [messageText, setMessageText] = useState("");
@@ -57,7 +58,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
           body: JSON.stringify({
             messageType: "ENTER",
             chatRoom: { id: roomId },
-            sender: { nickname: user.nickname },
+            sender: { nickname: <UserName userId={user?.id} />},
           }),
         });
       },
@@ -74,7 +75,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
           body: JSON.stringify({
             messageType: "LEAVE",
             chatRoom: { id: roomId },
-            sender: { nickname: user.nickname },
+            sender: { nickname: <UserName userId={user?.id} /> },
           }),
         });
         subscription.current?.unsubscribe();
@@ -83,7 +84,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
         stompClient.current = null;
       }
     };
-  }, [roomId, chatRoomType, user.nickname]);
+  }, [roomId, chatRoomType, user?.id]);
 
   const sendMessage = () => {
     if (!messageText.trim() || !stompClient.current?.connected) return;
@@ -94,7 +95,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
         messageType: "TALK",
         chatRoom: { id: roomId },
         messageText,
-        sender: { nickname: user.nickname },
+        sender: { nickname: <UserName userId={user?.id}/> },
       }),
     });
     setMessageText("");
