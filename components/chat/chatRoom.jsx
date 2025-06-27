@@ -5,7 +5,6 @@ import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { useUser } from "@/context/UserContext";
 import { IoChevronBackSharp } from "react-icons/io5";
-import UserName from "@/components/common/UserName";
 
 export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
   const [messageText, setMessageText] = useState("");
@@ -17,7 +16,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
   const messageBoxRef = useRef(null);
 
   const createDisplayText = (body) => {
-    const nickname = body.sender?.nickname || "알 수 없음";
+    const nickname = body.sender.nickname?.trim() || body.sender.name?.trim() || "알 수 없음";
     const time = new Date(body.createdAt).toLocaleTimeString();
     const text = body.messageText;
     return { nickname, time, text };
@@ -58,7 +57,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
           body: JSON.stringify({
             messageType: "ENTER",
             chatRoom: { id: roomId },
-            sender: { nickname: <UserName userId={user?.id} />},
+            sender: { nickname: user.nickname },
           }),
         });
       },
@@ -75,7 +74,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
           body: JSON.stringify({
             messageType: "LEAVE",
             chatRoom: { id: roomId },
-            sender: { nickname: <UserName userId={user?.id} /> },
+            sender: { nickname: user.nickname },
           }),
         });
         subscription.current?.unsubscribe();
@@ -84,7 +83,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
         stompClient.current = null;
       }
     };
-  }, [roomId, chatRoomType, user?.id]);
+  }, [roomId, chatRoomType, user.nickname]);
 
   const sendMessage = () => {
     if (!messageText.trim() || !stompClient.current?.connected) return;
@@ -95,7 +94,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
         messageType: "TALK",
         chatRoom: { id: roomId },
         messageText,
-        sender: { nickname: <UserName userId={user?.id}/> },
+        sender: { nickname: user.nickname },
       }),
     });
     setMessageText("");
