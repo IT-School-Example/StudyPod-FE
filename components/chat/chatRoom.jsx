@@ -32,7 +32,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
   useEffect(() => {
     if (stompClient.current) return;
 
-    const socket = new SockJS("http://localhost:8080/ws");
+    const socket = new SockJS("https://studypod.click/wss");
 
     const client = new Client({
       webSocketFactory: () => socket,
