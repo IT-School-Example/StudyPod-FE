@@ -2,7 +2,7 @@
 
 import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/common/Navbar";
 import StudyIntro from "@/app/studyGroup/components/studyIntro";
 import StudyMembers from "@/app/studyGroup/components/studyMembers";
 import Enrollment from "@/app/studyGroup/components/enrollment";

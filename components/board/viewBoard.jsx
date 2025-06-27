@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useUser } from "@/context/UserContext";
-import UserName from "@/components/UserName";
+import UserName from "@/components/common/UserName";
 
 const categoryMap = {
   NOTICE: "공지",

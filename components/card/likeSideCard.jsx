@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FaHeart } from "react-icons/fa6";
-import UserName from "@/components/UserName";
+import UserName from "@/components/common/UserName";
 
 /**
  * 마이페이지 > 관심 스터디 카드
