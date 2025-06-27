@@ -11,15 +11,17 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
   const [messages, setMessages] = useState([]);
   const { user } = useUser();
 
+  const myDisplayName = (user?.nickname?.trim() || user?.name?.trim()) ?? "알 수 없음";
   const stompClient = useRef(null);
   const subscription = useRef(null);
   const messageBoxRef = useRef(null);
 
   const createDisplayText = (body) => {
-    const nickname = body.sender.nickname?.trim() || body.sender.name?.trim() || "알 수 없음";
+    const nickname = (body.sender?.nickname?.trim() || body.sender?.name?.trim()) || "알 수 없음";
     const time = new Date(body.createdAt).toLocaleTimeString();
     const text = body.messageText;
-    return { nickname, time, text };
+    const type = body.messageType; // "TALK", "ENTER", "LEAVE"
+    return { nickname, time, text, type };
   };
 
   useEffect(() => {
@@ -57,7 +59,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
           body: JSON.stringify({
             messageType: "ENTER",
             chatRoom: { id: roomId },
-            sender: { nickname: user.nickname },
+            sender: { nickname: myDisplayName },
           }),
         });
       },
@@ -69,12 +71,12 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
 
     return () => {
       if (stompClient.current?.connected) {
-        stompClient.current.publish({
+        client.publish({
           destination: "/app/chat/message",
           body: JSON.stringify({
             messageType: "LEAVE",
             chatRoom: { id: roomId },
-            sender: { nickname: user.nickname },
+            sender: { nickname: myDisplayName },
           }),
         });
         subscription.current?.unsubscribe();
@@ -83,7 +85,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
         stompClient.current = null;
       }
     };
-  }, [roomId, chatRoomType, user.nickname]);
+  }, [roomId, chatRoomType, myDisplayName]);
 
   const sendMessage = () => {
     if (!messageText.trim() || !stompClient.current?.connected) return;
@@ -94,7 +96,7 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
         messageType: "TALK",
         chatRoom: { id: roomId },
         messageText,
-        sender: { nickname: user.nickname },
+        sender: { nickname: myDisplayName },
       }),
     });
     setMessageText("");
@@ -117,20 +119,35 @@ export default function ChatRoom({ roomId, chatRoomType, roomName, onLeave }) {
         ref={messageBoxRef}
         className="flex-1 overflow-y-auto p-4 space-y-2 bg-[#C9D6E0]"
       >
-        {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.nickname === user.nickname ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[70%] p-2 rounded-lg text-sm whitespace-pre-line
-              ${msg.nickname === user.nickname ? "bg-yellow-300 text-right" : "bg-white"}`}>
-              {msg.nickname !== user.nickname && (
-                <div className="font-semibold text-xs text-gray-600 mb-1">{msg.nickname}</div>
-              )}
-              <div>{msg.text}</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {msg.time}
+        {messages.map((msg, i) => {
+          if (msg.type === "ENTER" || msg.type === "LEAVE") {
+            return (
+              <div key={i} className="flex justify-center">
+                <div className="bg-gray-400 bg-opacity-30 text-xs px-3 py-1 rounded text-gray-700">
+                  {msg.nickname}님이 {msg.type === "ENTER" ? "입장" : "퇴장"}하셨습니다.
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div
+              key={i}
+              className={`flex ${msg.nickname === myDisplayName ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`max-w-[70%] p-2 rounded-lg text-sm whitespace-pre-line
+                ${msg.nickname === myDisplayName ? "bg-yellow-300 text-right" : "bg-white"}`}
+              >
+                {msg.nickname !== myDisplayName && (
+                  <div className="font-semibold text-xs text-gray-600 mb-1">{msg.nickname}</div>
+                )}
+                <div>{msg.text}</div>
+                <div className="text-xs text-gray-500 mt-1">{msg.time}</div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* 메시지 입력창 */}
