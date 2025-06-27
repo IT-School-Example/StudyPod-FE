@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import ChatApp from "@/components/chat/ChatApp";
+import ChatApp from "@/components/chat/chatApp";
 import { useUser } from "@/context/UserContext";
 import { IoClose, IoChatbubblesOutline } from "react-icons/io5";
 
