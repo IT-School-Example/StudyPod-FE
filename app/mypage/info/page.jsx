@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 
 export default function Info() {
   const router = useRouter();
-  const {user} = useUser();
+  const { user, setUser } = useUser();
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -15,6 +15,17 @@ export default function Info() {
     code: "",
   });
   const [codeVerified, setCodeVerified] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        email: user.email || "",
+        nickname: user.nickname || "",
+        password: "",
+        code: "",
+      });
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,7 +51,7 @@ export default function Info() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/mailCheck`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email: formData.email, code: formData.code }),
       });
 
       const data = await res.json();
@@ -50,7 +61,7 @@ export default function Info() {
         return;
       }
 
-      dispatch({ type: "SET_VERIFIED" });
+      setCodeVerified(true);
       alert("인증이 완료되었습니다.");
     } catch (err) {
       console.error(err);
@@ -61,7 +72,7 @@ export default function Info() {
   const handleSave = async () => {
     if (!user) return;
 
-    if (formData.email !== user.email && !codeVerified) {
+    if (formData.email && formData.email !== user.email && !codeVerified) {
       alert("이메일을 변경하려면 인증이 필요합니다.");
       return;
     }
@@ -90,6 +101,15 @@ export default function Info() {
           credentials: "include",
           body: JSON.stringify({ data: { email: formData.email } }),
         });
+      }
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data); // Context 갱신
       }
 
       alert("회원 정보가 수정되었습니다.");
