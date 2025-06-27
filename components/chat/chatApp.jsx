@@ -52,9 +52,9 @@ export default function ChatApp() {
   }, [user?.id]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-white px-6 text-black">
-      <div className="flex flex-row gap-6">
-        <div className="w-1/3">
+    <div className="w-full h-full flex flex-col bg-white text-black">
+      {!selectedRoom ? (
+        <div className="p-4 overflow-y-auto">
           {loading ? (
             <p className="text-gray-500">채팅방 목록 불러오는 중...</p>
           ) : (
@@ -68,20 +68,14 @@ export default function ChatApp() {
             />
           )}
         </div>
-
-        <div className="w-2/3">
-          {selectedRoom ? (
-            <ChatRoom
-              roomId={selectedRoom.id}
-              chatRoomType={selectedRoom.type}
-              roomName={selectedRoom.name}
-              onLeave={() => setSelectedRoom(null)}
-            />
-          ) : (
-            <p className="text-gray-400">채팅방을 선택해주세요.</p>
-          )}
-        </div>
-      </div>
+      ) : (
+        <ChatRoom
+          roomId={selectedRoom.id}
+          chatRoomType={selectedRoom.type}
+          roomName={selectedRoom.name}
+          onLeave={() => setSelectedRoom(null)}
+        />
+      )}
     </div>
   );
 }
