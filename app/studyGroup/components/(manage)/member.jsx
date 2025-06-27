@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import UserName from "@/components/UserName";
+import UserName from "@/components/common/UserName";
 
 export default function Member({ study, onKickSuccess }) {
   const studyList = Array.isArray(study) ? study : [study];

@@ -1,6 +1,6 @@
 "use client";
 
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/common/Navbar";
 import { IoHammerOutline } from "react-icons/io5";
 
 export default function Event() {

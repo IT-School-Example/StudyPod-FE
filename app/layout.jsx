@@ -1,7 +1,8 @@
 import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
-import Providers from "./providers"; 
+import Providers from "./providers";
 import { UserProvider } from "@/context/UserContext";
+import ChatIconModal from "@/components/chat/chatIconModal"; // ✅ 추가
 
 const inter = Inter({
   variable: "--font-inter",
@@ -26,7 +27,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${inter.variable} ${robotoMono.variable} antialiased`}>
         <Providers>
-          <UserProvider>{children}</UserProvider>
+          <UserProvider>
+            {children}
+            <ChatIconModal /> 
+          </UserProvider>
         </Providers>
       </body>
     </html>

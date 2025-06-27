@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/common/Navbar";
 import StudyCard from "@/components/card/studyCard";
 import { subjectOptions, meetingOptions, sidoOptions } from "@/shared/constants";
 import { getSubjectNm } from "@/shared/utils";

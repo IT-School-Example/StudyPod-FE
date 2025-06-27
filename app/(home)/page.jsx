@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
 import ScrollButton from "@/components/common/ScrollButton";
 import { useDraggableScroll } from "@/hooks/useDraggableScroll";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/common/Navbar";
 import { getSubjectNm } from "@/shared/utils";
 import StudyCard from "@/components/card/studyCard";
 import { useLikedStudies } from "@/hooks/useLikedStudies";

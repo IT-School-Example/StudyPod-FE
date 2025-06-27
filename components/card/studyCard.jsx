@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FaHeart } from "react-icons/fa6";
 import { useState } from "react";
 import { useUser } from "@/context/UserContext";
-import UserName from "@/components/UserName";
+import UserName from "@/components/common/UserName";
 
 export default function StudyCard({
   tag,
