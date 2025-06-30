@@ -47,15 +47,15 @@ export default function Introduce({ study }) {
         studyGroup: { id: study.id },
       };
 
-      const method = isNew ? "POST" : "PATCH";
+      const method = isNew ? "POST" : "PUT";
       const url = isNew
         ? `${process.env.NEXT_PUBLIC_API_URL}/introduce`
-        : `${process.env.NEXT_PUBLIC_API_URL}/introduce/update`;
+        : `${process.env.NEXT_PUBLIC_API_URL}/introduce/${introduceId}`;
 
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({data}),
       });
 
       if (!res.ok) throw new Error("소개글 저장 실패");
