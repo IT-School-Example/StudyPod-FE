@@ -55,7 +55,7 @@ export default function Introduce({ study }) {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({data}),
+        body: JSON.stringify(data),
       });
 
       if (!res.ok) throw new Error("소개글 저장 실패");
