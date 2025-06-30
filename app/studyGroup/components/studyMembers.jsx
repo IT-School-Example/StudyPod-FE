@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import ViewBoard from "@/components/board/viewBoard";
 import PostBoard from "@/components/board/postBoard";
+import { useMyStudies } from "@/hooks/useMyStudies";
 import { useUser } from "@/context/UserContext";
 import { getSidoName, getSubjectNm } from "@/shared/utils";
 
 export default function StudyMembers({ study }) {
   const { user } = useUser();
+  const myStudies = useMyStudies(user?.id);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   const [tab, setTab] = useState("info");
@@ -19,11 +21,9 @@ export default function StudyMembers({ study }) {
 
   useEffect(() => {
     if (!user || !study) return;
-
-    const isLeader = study.leader?.id === user.id;
-    const isMember = study.members?.some((m) => m.id === user.id);
-    setIsAuthorized(isLeader || isMember);
-  }, [user, study]);
+    const isIncluded = myStudies.some((s) => s.id === study.id);
+    setIsAuthorized(isIncluded);
+  }, [user, study, myStudies]);
 
   useEffect(() => {
     const fetchPosts = async () => {
